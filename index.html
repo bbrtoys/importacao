@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedido de Importação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#eef1f4;--sheet:#ffffff;--ink:#16222e;--muted:#5b6b7a;--rule:#d3dae1;
+  --accent:#0d5c75;--accent-ink:#ffffff;--accent-soft:#e2eff3;
+  --warn:#9a5b00;--warn-soft:#fdf0d5;--ok:#1f6b45;--ok-soft:#def2e6;
+  --bad:#a3271f;--bad-soft:#fbe5e2;--blue:#1d4f91;--blue-soft:#e1ebf8;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0f161d;--sheet:#17212b;--ink:#e6edf3;--muted:#93a3b2;--rule:#2c3a48;
+    --accent:#5fb8d1;--accent-ink:#06222b;--accent-soft:#16333d;
+    --warn:#f0b955;--warn-soft:#3a2c0f;--ok:#6fcf9a;--ok-soft:#12301f;
+    --bad:#f08a80;--bad-soft:#3b1a17;--blue:#8db8f0;--blue-soft:#15273f;color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding:24px 16px 64px}
+.wrap{max-width:960px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+[hidden]{display:none !important}
+h1{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;margin:0;letter-spacing:-.01em}
+h2{font-family:var(--display);font-weight:600;font-size:15px;margin:0;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.who{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.who b{color:var(--ink);font-weight:600}
+nav.tabs{display:flex;flex-wrap:wrap;gap:4px;background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:3px;align-self:flex-start}
+nav.tabs a{padding:7px 14px;border-radius:6px;color:var(--muted);text-decoration:none;font-weight:500;font-size:14px}
+nav.tabs a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.strip{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding:12px 20px;background:var(--accent-soft);border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.strip b{font-family:var(--mono);font-weight:500;color:var(--ink);font-size:14px}
+.block{padding:20px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--rule)}
+.block:last-child{border-bottom:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:500;color:var(--muted)}
+.req{color:var(--bad)}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:9px 10px;width:100%;color:var(--ink);font-size:15px}
+textarea{resize:vertical;min-height:64px}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.7}
+input:disabled,select:disabled{opacity:.6}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.invalid{border-color:var(--bad);background:var(--bad-soft)}
+.fixo{padding:9px 10px;border:1px dashed var(--rule);border-radius:6px;font-weight:600;color:var(--ink);font-size:15px}
+
+.items{display:flex;flex-direction:column;gap:6px}
+.row,.row-head{display:grid;grid-template-columns:28px 150px 1fr 110px 34px;gap:8px;align-items:center}
+.row-head{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.row-head span:nth-child(4){text-align:right}
+.n{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right}
+.row input.ref{font-family:var(--mono);font-size:14px}
+.row input.qtd{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.x{border:1px solid transparent;background:none;border-radius:6px;height:34px;width:34px;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.x:hover{background:var(--bad-soft);color:var(--bad)}
+.items-foot,.send{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.hint{font-size:12.5px;color:var(--muted)}
+.totals{display:flex;gap:20px;font-size:13px;color:var(--muted)}
+.totals b{font-family:var(--mono);font-weight:500;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+.btn{border:1px solid var(--rule);background:var(--sheet);border-radius:7px;padding:9px 14px;font-weight:600;font-size:14px;cursor:pointer;color:var(--ink)}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);padding:11px 22px;font-size:15px}
+.btn.primary:hover{filter:brightness(1.08);color:var(--accent-ink)}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.btn.small{padding:6px 10px;font-size:13px}
+.btn:disabled{opacity:.55;cursor:default}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.msg{font-size:13.5px;padding:10px 12px;border-radius:7px}
+.msg.bad{background:var(--bad-soft);color:var(--bad)}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.msg.warn{background:var(--warn-soft);color:var(--warn)}
+.msg.info{background:var(--accent-soft);color:var(--ink)}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--rule);vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.mono{font-family:var(--mono);font-size:13px}
+.scroll{overflow-x:auto}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;font-size:14px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.tile{border:1px solid var(--rule);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.tile span{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.tile b{font-family:var(--mono);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.filters label{flex:1 1 170px}
+.order{border-bottom:1px solid var(--rule)}
+.order:last-child{border-bottom:0}
+.order summary{display:grid;grid-template-columns:150px 1fr auto auto;gap:6px 14px;align-items:center;padding:12px 20px;cursor:pointer;list-style:none}
+.order summary::-webkit-details-marker{display:none}
+.order summary:hover{background:var(--accent-soft)}
+.order .num-ped{font-family:var(--mono);font-size:13px}
+.order .cli{font-weight:600}
+.order .meta{font-size:12.5px;color:var(--muted);font-weight:400}
+.order .qt{font-family:var(--mono);font-size:13px;color:var(--muted);white-space:nowrap}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.pill.recebido{background:var(--warn-soft);color:var(--warn)}
+.pill.em_analise{background:var(--blue-soft);color:var(--blue)}
+.pill.confirmado{background:var(--ok-soft);color:var(--ok)}
+.pill.embarcado{background:var(--accent);color:var(--accent-ink)}
+.order .body{padding:4px 20px 18px;display:flex;flex-direction:column;gap:12px}
+.order .body select{width:auto}
+.empty{padding:36px 20px;text-align:center;color:var(--muted)}
+.users td select,.users td input[type=text]{padding:6px 8px;font-size:14px;min-width:130px}
+.users td input[type=checkbox]{width:auto}
+.login{max-width:420px;margin:6vh auto 0;width:100%}
+
+@media (max-width:680px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .row-head{display:none}
+  .row{grid-template-columns:22px 1fr 96px 34px;grid-template-areas:"n prod prod x" ". ref qtd .";padding-bottom:8px;border-bottom:1px dashed var(--rule)}
+  .row .n{grid-area:n}.row .produto{grid-area:prod}.row .ref{grid-area:ref}.row .qtd{grid-area:qtd}.row .x{grid-area:x}
+  .order summary{grid-template-columns:1fr auto;padding:12px 16px}
+  .order .body{padding:4px 16px 16px}
+  .block{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ================= ACESSO ================= -->
+<section id="v-carregando" class="empty">Carregando…</section>
+
+<section id="v-login" class="login" hidden>
+  <form class="sheet" id="f-login" novalidate>
+    <div class="block">
+      <div><h1>Pedido de Importação</h1><div class="sub" id="login-sub">Entre com seu e-mail e senha.</div></div>
+      <label for="l-nome" id="l-nome-box" hidden>Seu nome
+        <input id="l-nome" type="text" autocomplete="name" maxlength="80">
+      </label>
+      <label for="l-email">E-mail
+        <input id="l-email" type="email" autocomplete="username" required>
+      </label>
+      <label for="l-senha">Senha
+        <input id="l-senha" type="password" autocomplete="current-password" required minlength="8">
+      </label>
+      <div class="msg bad" id="l-erro" role="alert" hidden></div>
+      <button type="submit" class="btn primary" id="l-entrar">Entrar</button>
+    </div>
+  </form>
+</section>
+
+<section id="v-bloqueado" class="login" hidden>
+  <div class="sheet"><div class="block">
+    <h1>Acesso ainda não liberado</h1>
+    <div class="msg warn">Seu usuário foi criado, mas ainda não tem um perfil definido. Peça ao administrador do sistema para liberar o acesso.</div>
+    <button type="button" class="btn" data-sair>Sair</button>
+  </div></div>
+</section>
+
+<!-- ================= SISTEMA ================= -->
+<div id="app" hidden style="display:flex;flex-direction:column;gap:16px">
+  <header class="top">
+    <div><h1>Pedido de Importação</h1></div>
+    <div class="who">
+      <span><b id="u-nome"></b> · <span id="u-papel"></span></span>
+      <button type="button" class="btn small" id="b-senha">Trocar senha</button>
+      <button type="button" class="btn small" data-sair>Sair</button>
+    </div>
+  </header>
+
+  <form class="sheet" id="f-senha" hidden novalidate>
+    <div class="block">
+      <h2>Trocar senha</h2>
+      <div class="grid2">
+        <label for="s-nova">Nova senha (mínimo 8 caracteres)
+          <input id="s-nova" type="password" autocomplete="new-password" minlength="8">
+        </label>
+        <label for="s-conf">Repita a nova senha
+          <input id="s-conf" type="password" autocomplete="new-password" minlength="8">
+        </label>
+      </div>
+      <div class="msg" id="s-msg" hidden></div>
+      <div class="actions">
+        <button type="submit" class="btn primary">Salvar nova senha</button>
+        <button type="button" class="btn" id="s-cancelar">Fechar</button>
+      </div>
+    </div>
+  </form>
+
+  <nav class="tabs" aria-label="Seções">
+    <a href="#novo" id="t-novo">Novo pedido</a>
+    <a href="#pedidos" id="t-pedidos">Pedidos</a>
+    <a href="#usuarios" id="t-usuarios" hidden>Usuários e clientes</a>
+  </nav>
+
+  <!-- ---------- NOVO PEDIDO ---------- -->
+  <section id="v-novo">
+    <form class="sheet" id="form" novalidate>
+      <div class="strip">
+        <span>Novo pedido</span>
+        <span>Data <b id="f-data"></b></span>
+      </div>
+      <div class="block">
+        <h2>Cliente</h2>
+        <div class="grid2">
+          <label for="cliente" id="cliente-box">Cliente de importação <span class="req">*</span>
+            <select id="cliente"><option value="">Selecione o cliente…</option></select>
+          </label>
+          <div id="cliente-fixo-box" hidden>
+            <label>Cliente de importação</label>
+            <div class="fixo" id="cliente-fixo" style="margin-top:5px"></div>
+          </div>
+          <label for="responsavel">Responsável pelo pedido
+            <input id="responsavel" type="text" maxlength="80" placeholder="Nome de quem está preenchendo">
+          </label>
+        </div>
+      </div>
+      <div class="block">
+        <h2>Produtos</h2>
+        <div class="items">
+          <div class="row-head"><span></span><span>Código / Ref.</span><span>Produto</span><span>Quantidade</span><span></span></div>
+          <div id="rows" class="items"></div>
+        </div>
+        <div class="items-foot">
+          <div class="actions">
+            <button type="button" class="btn small" id="add">+ Adicionar item</button>
+            <span class="hint">Dá para colar várias linhas direto do Excel (código, produto, quantidade).</span>
+          </div>
+          <div class="totals"><span><b id="t-itens">0</b> itens</span><span><b id="t-unid">0</b> unidades</span></div>
+        </div>
+      </div>
+      <div class="block">
+        <label for="obs">Observações
+          <textarea id="obs" maxlength="1000" placeholder="Prazo desejado, embalagem, instruções de embarque…"></textarea>
+        </label>
+        <div class="msg bad" id="erro" role="alert" hidden></div>
+        <div class="send">
+          <button type="button" class="btn small danger" id="limpar">Limpar tudo</button>
+          <button type="submit" class="btn primary" id="enviar">Enviar pedido</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="sheet" id="recibo" hidden>
+      <div class="strip"><span>Pedido nº <b id="r-numero"></b></span><span>Data <b id="r-data"></b></span></div>
+      <div class="block">
+        <div class="msg ok" role="status">Pedido enviado e registrado.</div>
+        <dl class="kv" id="r-kv"></dl>
+        <div class="scroll"><table>
+          <thead><tr><th class="num">#</th><th>Código</th><th>Produto</th><th class="num">Qtd.</th></tr></thead>
+          <tbody id="r-itens"></tbody>
+          <tfoot><tr><td></td><td></td><td><b>Total</b></td><td class="num"><b id="r-total"></b></td></tr></tfoot>
+        </table></div>
+      </div>
+      <div class="block"><div class="actions">
+        <button type="button" class="btn" id="r-copiar">Copiar pedido</button>
+        <button type="button" class="btn" id="r-baixar">Baixar planilha (CSV)</button>
+        <button type="button" class="btn primary" id="r-novo">Fazer outro pedido</button>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ---------- PEDIDOS / PAINEL ---------- -->
+  <section id="v-pedidos" hidden>
+    <div class="sheet">
+      <div class="block">
+        <div class="send">
+          <h2 id="p-titulo">Pedidos</h2>
+          <button type="button" class="btn small" id="p-atualizar">Atualizar</button>
+        </div>
+        <div class="tiles" id="tiles"></div>
+        <div class="filters">
+          <label for="fil-cliente" id="fil-cliente-box">Cliente
+            <select id="fil-cliente"><option value="">Todos os clientes</option></select>
+          </label>
+          <label for="fil-status">Etapa
+            <select id="fil-status"><option value="">Todas</option></select>
+          </label>
+          <label for="fil-busca">Buscar
+            <input id="fil-busca" type="search" placeholder="Nº do pedido, código ou produto">
+          </label>
+          <button type="button" class="btn" id="p-baixar">Baixar lista (CSV)</button>
+        </div>
+        <div class="msg bad" id="p-erro" hidden></div>
+      </div>
+      <div id="lista"><div class="empty">Carregando pedidos…</div></div>
+    </div>
+  </section>
+
+  <!-- ---------- USUÁRIOS E CLIENTES ---------- -->
+  <section id="v-usuarios" hidden style="display:flex;flex-direction:column;gap:16px">
+    <form class="sheet" id="f-novo-usuario" novalidate>
+      <div class="block">
+        <h2>Cadastrar usuário</h2>
+        <div class="grid3">
+          <label for="nu-nome">Nome <span class="req">*</span><input id="nu-nome" type="text" maxlength="80" autocomplete="off"></label>
+          <label for="nu-email">E-mail <span class="req">*</span><input id="nu-email" type="email" autocomplete="off"></label>
+          <label for="nu-senha">Senha provisória <span class="req">*</span><input id="nu-senha" type="text" minlength="8" autocomplete="off" placeholder="mínimo 8 caracteres"></label>
+          <label for="nu-papel">Perfil <span class="req">*</span>
+            <select id="nu-papel">
+              <option value="cliente">Cliente de importação</option>
+              <option value="interno">Interno (vê todos os pedidos)</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </label>
+          <label for="nu-cliente" id="nu-cliente-box">Empresa do cliente <span class="req">*</span>
+            <select id="nu-cliente"><option value="">Selecione…</option></select>
+          </label>
+        </div>
+        <div class="hint">Passe o e-mail e a senha provisória para a pessoa. Ela pode trocar a senha depois de entrar.</div>
+        <div class="msg" id="nu-msg" hidden></div>
+        <div><button type="submit" class="btn primary" id="nu-criar">Cadastrar usuário</button></div>
+      </div>
+    </form>
+
+    <div class="sheet">
+      <div class="block">
+        <h2>Usuários</h2>
+        <div class="msg bad" id="us-erro" hidden></div>
+        <div class="scroll"><table class="users">
+          <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Empresa</th><th>Ativo</th><th></th></tr></thead>
+          <tbody id="us-lista"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="block">
+        <h2>Clientes de importação</h2>
+        <form class="filters" id="f-cliente" novalidate>
+          <label for="nc-nome">Novo cliente<input id="nc-nome" type="text" maxlength="80" placeholder="Nome da empresa"></label>
+          <button type="submit" class="btn">Adicionar cliente</button>
+        </form>
+        <div class="msg bad" id="cl-erro" hidden></div>
+        <div class="scroll"><table>
+          <thead><tr><th>Cliente</th><th>Situação</th><th></th></tr></thead>
+          <tbody id="cl-lista"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ====== Configuração do projeto Supabase (dados públicos) ====== */
+var SUPABASE_URL="https://fbtnphqvwohruwygeyvk.supabase.co";
+var SUPABASE_KEY="sb_publishable_QyHtAl0X_CxP6aYY6DSl-A_d5k-BXpn";
+
+var ETAPAS=[["recebido","Recebido"],["em_analise","Em análise"],["confirmado","Confirmado"],["embarcado","Embarcado"]];
+var PAPEIS={admin:"Administrador",interno:"Interno",cliente:"Cliente",pendente:"Pendente"};
+var LINHAS_INICIAIS=5;
+
+var $=function(id){return document.getElementById(id)};
+function el(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function fmtInt(n){return Number(n||0).toLocaleString("pt-BR")}
+function fmtData(iso){var d=new Date(iso);if(isNaN(d))return "";return d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
+function parseQtd(s){var d=String(s==null?"":s).replace(/\D/g,"");return d?parseInt(d,10):0}
+function etapaNome(s){for(var i=0;i<ETAPAS.length;i++)if(ETAPAS[i][0]===s)return ETAPAS[i][1];return s}
+function msg(node,tipo,texto){node.className="msg "+tipo;node.textContent=texto;node.hidden=false}
+function traduz(e){
+  var m=(e&&e.message)||String(e||"");
+  if(/Invalid login credentials/i.test(m))return "E-mail ou senha incorretos.";
+  if(/Email not confirmed/i.test(m))return "Este e-mail ainda não foi confirmado. Abra o link enviado para a caixa de entrada.";
+  if(/already registered|already been registered/i.test(m))return "Já existe um usuário com este e-mail.";
+  if(/Signups not allowed|signup is disabled/i.test(m))return "O cadastro por aqui está desativado no Supabase. Crie o usuário em Authentication > Users no painel do Supabase; ele aparece na lista abaixo como Pendente para você definir o perfil.";
+  if(/Password should be/i.test(m))return "A senha é fraca demais. Use pelo menos 8 caracteres.";
+  if(/rate limit/i.test(m))return "Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente de novo.";
+  if(/Failed to fetch|NetworkError/i.test(m))return "Sem conexão com o servidor. Verifique a internet e tente de novo.";
+  return m;
+}
+
+if(!window.supabase){$("v-carregando").textContent="Não foi possível carregar o sistema. Verifique a internet e recarregue a página.";return}
+var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+var perfil=null,clientes=[],pedidos=[],abertos={},ultimo=null,primeiroAcesso=false;
+var st={cliente:"",responsavel:"",obs:"",itens:[]};
+function interno(){return perfil&&(perfil.papel==="admin"||perfil.papel==="interno")}
+function admin(){return perfil&&perfil.papel==="admin"}
+
+/* ================= ACESSO ================= */
+function tela(id){
+  ["v-carregando","v-login","v-bloqueado","app"].forEach(function(v){$(v).hidden=v!==id});
+}
+async function iniciar(){
+  var s=await sb.auth.getSession();
+  if(s.data&&s.data.session){await entrar();return}
+  await prepararLogin();
+}
+async function prepararLogin(){
+  primeiroAcesso=false;
+  try{var r=await sb.rpc("existe_admin");if(!r.error&&r.data===false)primeiroAcesso=true}catch(e){}
+  $("l-nome-box").hidden=!primeiroAcesso;
+  $("login-sub").textContent=primeiroAcesso?"Primeiro acesso: crie a conta do administrador do sistema.":"Entre com seu e-mail e senha.";
+  $("l-entrar").textContent=primeiroAcesso?"Criar conta de administrador":"Entrar";
+  $("l-senha").autocomplete=primeiroAcesso?"new-password":"current-password";
+  $("l-erro").hidden=true;tela("v-login");
+}
+$("f-login").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var email=$("l-email").value.trim(),senha=$("l-senha").value,b=$("l-entrar"),er=$("l-erro");
+  if(!email||!senha){msg(er,"bad","Informe o e-mail e a senha.");return}
+  if(primeiroAcesso&&senha.length<8){msg(er,"bad","A senha precisa ter pelo menos 8 caracteres.");return}
+  b.disabled=true;er.hidden=true;
+  try{
+    if(primeiroAcesso){
+      var r=await sb.auth.signUp({email:email,password:senha,options:{data:{nome:$("l-nome").value.trim()}}});
+      if(r.error)throw r.error;
+      if(!r.data.session){msg(er,"warn","Conta criada. Confirme o e-mail pelo link enviado para a sua caixa de entrada e depois entre aqui.");primeiroAcesso=false;$("l-entrar").textContent="Entrar";$("l-nome-box").hidden=true;b.disabled=false;return}
+    }else{
+      var r2=await sb.auth.signInWithPassword({email:email,password:senha});
+      if(r2.error)throw r2.error;
+    }
+    $("l-senha").value="";
+    await entrar();
+  }catch(err){msg(er,"bad",traduz(err))}
+  b.disabled=false;
+});
+document.querySelectorAll("[data-sair]").forEach(function(b){
+  b.addEventListener("click",async function(){await sb.auth.signOut();perfil=null;pedidos=[];await prepararLogin()});
+});
+
+async function entrar(){
+  tela("v-carregando");
+  var u=await sb.auth.getUser();
+  if(u.error||!u.data.user){await sb.auth.signOut();await prepararLogin();return}
+  var p=await sb.from("perfis").select("id,nome,email,papel,cliente_id,ativo").eq("id",u.data.user.id).maybeSingle();
+  if(p.error){$("v-carregando").textContent="Não foi possível carregar seu perfil: "+traduz(p.error);return}
+  perfil=p.data;
+  if(!perfil||!perfil.ativo||perfil.papel==="pendente"){tela("v-bloqueado");return}
+  var c=await sb.from("clientes").select("id,nome,ativo").order("nome");
+  clientes=c.data||[];
+  montarApp();tela("app");rota();
+}
+
+function nomeCliente(id){for(var i=0;i<clientes.length;i++)if(clientes[i].id===id)return clientes[i].nome;return ""}
+function opcoesClientes(sel,primeira,soAtivos){
+  var atual=sel.value;sel.textContent="";
+  var o=el("option",null,primeira);o.value="";sel.appendChild(o);
+  clientes.forEach(function(c){if(soAtivos&&!c.ativo)return;var x=el("option",null,c.nome);x.value=c.id;sel.appendChild(x)});
+  sel.value=atual;
+}
+function montarApp(){
+  $("u-nome").textContent=perfil.nome||perfil.email||"";
+  $("u-papel").textContent=perfil.papel==="cliente"?nomeCliente(perfil.cliente_id):PAPEIS[perfil.papel];
+  $("t-usuarios").hidden=!admin();
+  $("t-pedidos").textContent=interno()?"Painel de pedidos":"Meus pedidos";
+  $("p-titulo").textContent=interno()?"Painel de pedidos":"Pedidos da "+nomeCliente(perfil.cliente_id);
+  $("cliente-box").hidden=!interno();$("cliente-fixo-box").hidden=interno();
+  $("cliente-fixo").textContent=nomeCliente(perfil.cliente_id);
+  $("fil-cliente-box").hidden=!interno();
+  opcoesClientes($("cliente"),"Selecione o cliente…",true);
+  opcoesClientes($("fil-cliente"),"Todos os clientes",false);
+  opcoesClientes($("nu-cliente"),"Selecione…",true);
+  var fs=$("fil-status");
+  if(fs.options.length===1)ETAPAS.forEach(function(e){var o=el("option",null,e[1]);o.value=e[0];fs.appendChild(o)});
+  novoFormulario();
+}
+
+/* ---------- trocar senha ---------- */
+$("b-senha").addEventListener("click",function(){$("f-senha").hidden=!$("f-senha").hidden;$("s-msg").hidden=true});
+$("s-cancelar").addEventListener("click",function(){$("f-senha").hidden=true});
+$("f-senha").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var a=$("s-nova").value,b=$("s-conf").value,m=$("s-msg");
+  if(a.length<8){msg(m,"bad","A senha precisa ter pelo menos 8 caracteres.");return}
+  if(a!==b){msg(m,"bad","As duas senhas não são iguais.");return}
+  var r=await sb.auth.updateUser({password:a});
+  if(r.error){msg(m,"bad",traduz(r.error));return}
+  $("s-nova").value="";$("s-conf").value="";msg(m,"ok","Senha alterada.");
+});
+
+/* ================= NOVO PEDIDO ================= */
+function linhaVazia(){return {ref:"",produto:"",qtd:""}}
+function novoFormulario(){
+  st={cliente:"",responsavel:perfil.nome||"",obs:"",itens:[]};
+  while(st.itens.length<LINHAS_INICIAIS)st.itens.push(linhaVazia());
+  $("f-data").textContent=new Date().toLocaleDateString("pt-BR");
+  $("cliente").value="";$("responsavel").value=st.responsavel;$("obs").value="";
+  renderLinhas();$("erro").hidden=true;$("form").hidden=false;$("recibo").hidden=true;
+}
+function renderLinhas(focar){
+  var box=$("rows");box.textContent="";
+  st.itens.forEach(function(it,i){
+    var row=el("div","row");
+    row.appendChild(el("span","n",String(i+1)));
+    [["ref","Código"],["produto","Descrição do produto"],["qtd","0"]].forEach(function(c){
+      var inp=el("input",c[0]);
+      inp.type="text";inp.id="it-"+c[0]+"-"+i;inp.value=it[c[0]];inp.placeholder=c[1];
+      inp.dataset.i=i;inp.dataset.c=c[0];inp.autocomplete="off";
+      inp.setAttribute("aria-label",(c[0]==="ref"?"Código":c[0]==="produto"?"Produto":"Quantidade")+" do item "+(i+1));
+      if(c[0]==="qtd"){inp.inputMode="numeric";inp.maxLength=9}else inp.maxLength=c[0]==="ref"?40:200;
+      row.appendChild(inp);
+    });
+    var x=el("button","x","×");x.type="button";x.dataset.del=i;x.title="Remover item";x.setAttribute("aria-label","Remover item "+(i+1));
+    row.appendChild(x);box.appendChild(row);
+  });
+  if(focar){var f=$(focar);if(f)f.focus()}
+  totais();
+}
+function itensValidos(){
+  return st.itens.map(function(i){return {ref:i.ref.trim(),produto:i.produto.trim(),qtd:parseQtd(i.qtd)}})
+    .filter(function(i){return (i.ref||i.produto)&&i.qtd>0});
+}
+function totais(){
+  var v=itensValidos();
+  $("t-itens").textContent=fmtInt(v.length);
+  $("t-unid").textContent=fmtInt(v.reduce(function(s,i){return s+i.qtd},0));
+}
+$("rows").addEventListener("input",function(e){
+  var t=e.target;if(!t.dataset.c)return;
+  if(t.dataset.c==="qtd"){var lim=t.value.replace(/\D/g,"");if(lim!==t.value)t.value=lim}
+  st.itens[+t.dataset.i][t.dataset.c]=t.value;t.classList.remove("invalid");totais();
+});
+$("rows").addEventListener("click",function(e){
+  var b=e.target.closest("[data-del]");if(!b)return;
+  st.itens.splice(+b.dataset.del,1);if(!st.itens.length)st.itens.push(linhaVazia());renderLinhas();
+});
+$("rows").addEventListener("keydown",function(e){
+  if(e.key!=="Enter"||!e.target.dataset.c)return;
+  e.preventDefault();var i=+e.target.dataset.i;
+  if(i===st.itens.length-1){st.itens.push(linhaVazia());renderLinhas("it-ref-"+(i+1))}
+  else{var n=$("it-"+e.target.dataset.c+"-"+(i+1));if(n)n.focus()}
+});
+$("rows").addEventListener("paste",function(e){
+  var t=e.target;if(!t.dataset.c)return;
+  var txt=(e.clipboardData||window.clipboardData).getData("text");
+  if(!txt||(txt.indexOf("\t")<0&&txt.replace(/\r?\n$/,"").indexOf("\n")<0))return;
+  e.preventDefault();
+  var cols=["ref","produto","qtd"],c0=cols.indexOf(t.dataset.c),i0=+t.dataset.i;
+  txt.replace(/\r/g,"").split("\n").filter(function(l){return l.trim()!==""}).slice(0,1000).forEach(function(l,k){
+    var i=i0+k;while(st.itens.length<=i)st.itens.push(linhaVazia());
+    l.split("\t").forEach(function(v,j){
+      var c=cols[c0+j];if(!c)return;v=v.trim();
+      st.itens[i][c]=c==="qtd"?String(parseQtd(v)||""):v.slice(0,c==="ref"?40:200);
+    });
+  });
+  renderLinhas();
+});
+$("add").addEventListener("click",function(){st.itens.push(linhaVazia());renderLinhas("it-ref-"+(st.itens.length-1))});
+$("cliente").addEventListener("change",function(){st.cliente=this.value;this.classList.remove("invalid")});
+$("responsavel").addEventListener("input",function(){st.responsavel=this.value});
+$("obs").addEventListener("input",function(){st.obs=this.value});
+var limparArmado=false,tLimpar=null;
+$("limpar").addEventListener("click",function(){
+  var b=this;
+  if(!limparArmado){limparArmado=true;b.textContent="Clique de novo para limpar";tLimpar=setTimeout(function(){limparArmado=false;b.textContent="Limpar tudo"},3500);return}
+  clearTimeout(tLimpar);limparArmado=false;b.textContent="Limpar tudo";novoFormulario();
+});
+function validar(){
+  var erros=[];
+  document.querySelectorAll("#form .invalid").forEach(function(n){n.classList.remove("invalid")});
+  if(interno()&&!st.cliente){erros.push("Selecione o cliente.");$("cliente").classList.add("invalid")}
+  var inc=0;
+  st.itens.forEach(function(it,i){
+    var tem=it.ref.trim()||it.produto.trim(),q=parseQtd(it.qtd);
+    if(tem&&q<=0){inc++;$("it-qtd-"+i).classList.add("invalid")}
+    if(!tem&&q>0){inc++;$("it-produto-"+i).classList.add("invalid")}
+  });
+  if(inc)erros.push(inc===1?"Um item está incompleto: informe o produto e a quantidade.":inc+" itens estão incompletos: informe o produto e a quantidade de cada um.");
+  if(!itensValidos().length&&!inc)erros.push("Informe pelo menos um produto com quantidade.");
+  return erros;
+}
+$("form").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var erros=validar(),er=$("erro");
+  if(erros.length){msg(er,"bad",erros.join(" "));var inv=document.querySelector("#form .invalid");if(inv)inv.focus();return}
+  er.hidden=true;
+  var itens=itensValidos(),btn=$("enviar");
+  btn.disabled=true;btn.textContent="Enviando…";
+  var cid=interno()?st.cliente:perfil.cliente_id;
+  var r=await sb.rpc("criar_pedido",{p_cliente:cid,p_responsavel:st.responsavel.trim(),p_obs:st.obs.trim(),p_itens:itens});
+  btn.disabled=false;btn.textContent="Enviar pedido";
+  if(r.error){msg(er,"bad","O pedido não foi enviado: "+traduz(r.error));return}
+  ultimo={numero:r.data.numero,cliente:nomeCliente(cid),responsavel:st.responsavel.trim(),obs:st.obs.trim(),itens:itens,criado_em:new Date().toISOString(),status:"recebido"};
+  mostrarRecibo(ultimo);
+});
+
+/* ---------- recibo, cópia e CSV ---------- */
+function textoPedido(p){
+  var l=["PEDIDO DE IMPORTAÇÃO "+p.numero,"Cliente: "+p.cliente,"Data: "+fmtData(p.criado_em),"Etapa: "+etapaNome(p.status)];
+  if(p.responsavel)l.push("Responsável: "+p.responsavel);
+  l.push("","ITENS");
+  p.itens.forEach(function(i,k){l.push((k+1)+". "+(i.ref?"["+i.ref+"] ":"")+(i.produto||"(sem descrição)")+" | "+fmtInt(i.qtd)+" un")});
+  l.push("","Total: "+fmtInt(p.itens.length)+" itens, "+fmtInt(p.itens.reduce(function(s,i){return s+i.qtd},0))+" unidades");
+  if(p.obs)l.push("","Observações: "+p.obs);
+  return l.join("\n");
+}
+function baixarCsv(nome,lista){
+  function c(v){v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'}
+  var out=[["Pedido","Data","Cliente","Responsável","Etapa","Item","Código","Produto","Quantidade","Observações"].map(c).join(";")];
+  lista.forEach(function(p){p.itens.forEach(function(i,k){
+    out.push([p.numero,fmtData(p.criado_em),p.cliente,p.responsavel,etapaNome(p.status),k+1,i.ref,i.produto,i.qtd,p.obs].map(c).join(";"));
+  })});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob(["﻿"+out.join("\r\n")],{type:"text/csv;charset=utf-8"}));
+  a.download=nome;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+}
+function copiar(txt,btn){
+  var orig=btn.textContent;
+  function ok(){btn.textContent="Copiado";setTimeout(function(){btn.textContent=orig},1800)}
+  function falha(){btn.textContent="Não foi possível copiar";setTimeout(function(){btn.textContent=orig},2500)}
+  try{navigator.clipboard.writeText(txt).then(ok,falha)}catch(e){falha()}
+}
+function linhasItens(tbody,itens){
+  tbody.textContent="";
+  itens.forEach(function(i,k){
+    var tr=el("tr");
+    tr.appendChild(el("td","num",String(k+1)));tr.appendChild(el("td","mono",i.ref||""));
+    tr.appendChild(el("td",null,i.produto||""));tr.appendChild(el("td","num",fmtInt(i.qtd)));
+    tbody.appendChild(tr);
+  });
+}
+function mostrarRecibo(p){
+  $("r-numero").textContent=p.numero;$("r-data").textContent=fmtData(p.criado_em);
+  var kv=$("r-kv");kv.textContent="";
+  [["Cliente",p.cliente],["Responsável",p.responsavel],["Observações",p.obs]].forEach(function(x){
+    if(!x[1])return;kv.appendChild(el("dt",null,x[0]));kv.appendChild(el("dd",null,x[1]));
+  });
+  linhasItens($("r-itens"),p.itens);
+  $("r-total").textContent=fmtInt(p.itens.reduce(function(s,i){return s+i.qtd},0));
+  $("form").hidden=true;$("recibo").hidden=false;window.scrollTo(0,0);
+}
+$("r-copiar").addEventListener("click",function(){if(ultimo)copiar(textoPedido(ultimo),this)});
+$("r-baixar").addEventListener("click",function(){if(ultimo)baixarCsv("pedido-"+ultimo.numero+".csv",[ultimo])});
+$("r-novo").addEventListener("click",function(){novoFormulario();window.scrollTo(0,0)});
+
+/* ================= PAINEL DE PEDIDOS ================= */
+async function carregarPedidos(){
+  var er=$("p-erro");er.hidden=true;
+  var r=await sb.from("pedidos")
+    .select("id,numero,status,responsavel,obs,criado_em,cliente_id,pedido_itens(ordem,ref,produto,qtd)")
+    .order("criado_em",{ascending:false}).limit(2000);
+  if(r.error){msg(er,"bad","Não foi possível carregar os pedidos: "+traduz(r.error));return}
+  pedidos=(r.data||[]).map(function(p){
+    var itens=(p.pedido_itens||[]).slice().sort(function(a,b){return a.ordem-b.ordem});
+    return {id:p.id,numero:p.numero,status:p.status,responsavel:p.responsavel||"",obs:p.obs||"",criado_em:p.criado_em,
+      cliente_id:p.cliente_id,cliente:nomeCliente(p.cliente_id),itens:itens,
+      unidades:itens.reduce(function(s,i){return s+i.qtd},0)};
+  });
+  renderPainel();
+}
+function filtrados(){
+  var c=$("fil-cliente").value,s=$("fil-status").value,q=$("fil-busca").value.trim().toLowerCase();
+  return pedidos.filter(function(p){
+    if(c&&p.cliente_id!==c)return false;
+    if(s&&p.status!==s)return false;
+    if(q){
+      var alvo=(p.numero+" "+p.cliente+" "+p.responsavel+" "+p.itens.map(function(i){return i.ref+" "+i.produto}).join(" ")).toLowerCase();
+      if(alvo.indexOf(q)<0)return false;
+    }
+    return true;
+  });
+}
+function renderPainel(){
+  var lista=filtrados(),tiles=$("tiles");tiles.textContent="";
+  var t=el("div","tile");t.appendChild(el("span",null,"Pedidos"));t.appendChild(el("b",null,fmtInt(lista.length)));tiles.appendChild(t);
+  ETAPAS.forEach(function(e){
+    var n=lista.filter(function(p){return p.status===e[0]}).length;
+    var d=el("div","tile");d.appendChild(el("span",null,e[1]));d.appendChild(el("b",null,fmtInt(n)));tiles.appendChild(d);
+  });
+  var box=$("lista");box.textContent="";
+  $("p-baixar").disabled=!lista.length;
+  if(!lista.length){box.appendChild(el("div","empty",pedidos.length?"Nenhum pedido com esses filtros.":"Nenhum pedido registrado ainda."));return}
+  lista.forEach(function(p){
+    var d=el("details","order");d.open=!!abertos[p.id];
+    d.addEventListener("toggle",function(){if(d.open)abertos[p.id]=1;else delete abertos[p.id]});
+    var s=el("summary");
+    s.appendChild(el("span","num-ped",p.numero));
+    var c=el("span","cli",p.cliente||"");
+    c.appendChild(el("span","meta","  "+fmtData(p.criado_em)+(p.responsavel?" · "+p.responsavel:"")));
+    s.appendChild(c);
+    s.appendChild(el("span","qt",fmtInt(p.itens.length)+" itens · "+fmtInt(p.unidades)+" un"));
+    s.appendChild(el("span","pill "+p.status,etapaNome(p.status)));
+    d.appendChild(s);
+
+    var b=el("div","body");
+    var sc=el("div","scroll"),tb=el("table"),th=el("thead"),tr=el("tr");
+    [["#","num"],["Código",""],["Produto",""],["Qtd.","num"]].forEach(function(h){tr.appendChild(el("th",h[1],h[0]))});
+    th.appendChild(tr);tb.appendChild(th);var body=el("tbody");linhasItens(body,p.itens);tb.appendChild(body);sc.appendChild(tb);b.appendChild(sc);
+    if(p.obs)b.appendChild(el("div","msg info","Observações: "+p.obs));
+
+    var a=el("div","actions");
+    if(interno()){
+      var sel=el("select");sel.setAttribute("aria-label","Etapa do pedido "+p.numero);
+      ETAPAS.forEach(function(e){var o=el("option",null,e[1]);o.value=e[0];sel.appendChild(o)});
+      sel.value=p.status;
+      sel.addEventListener("change",async function(){
+        sel.disabled=true;
+        var r=await sb.from("pedidos").update({status:sel.value,atualizado_em:new Date().toISOString()}).eq("id",p.id);
+        sel.disabled=false;
+        if(r.error){msg($("p-erro"),"bad","A etapa não foi alterada: "+traduz(r.error));sel.value=p.status;return}
+        p.status=sel.value;renderPainel();
+      });
+      a.appendChild(sel);
+    }
+    var bc=el("button","btn small","Copiar");bc.type="button";bc.addEventListener("click",function(){copiar(textoPedido(p),bc)});a.appendChild(bc);
+    var bd=el("button","btn small","Baixar CSV");bd.type="button";bd.addEventListener("click",function(){baixarCsv("pedido-"+p.numero+".csv",[p])});a.appendChild(bd);
+    if(admin()){
+      var bx=el("button","btn small danger","Excluir");bx.type="button";var armado=false;
+      bx.addEventListener("click",async function(){
+        if(!armado){armado=true;bx.textContent="Confirmar exclusão";setTimeout(function(){armado=false;bx.textContent="Excluir"},3500);return}
+        bx.disabled=true;
+        var r=await sb.from("pedidos").delete().eq("id",p.id);
+        if(r.error){bx.disabled=false;msg($("p-erro"),"bad","O pedido não foi excluído: "+traduz(r.error));return}
+        pedidos=pedidos.filter(function(x){return x.id!==p.id});renderPainel();
+      });
+      a.appendChild(bx);
+    }
+    b.appendChild(a);d.appendChild(b);box.appendChild(d);
+  });
+}
+$("fil-cliente").addEventListener("change",renderPainel);
+$("fil-status").addEventListener("change",renderPainel);
+$("fil-busca").addEventListener("input",renderPainel);
+$("p-atualizar").addEventListener("click",carregarPedidos);
+$("p-baixar").addEventListener("click",function(){
+  var d=new Date(),p=function(n){return String(n).padStart(2,"0")};
+  baixarCsv("pedidos-importacao-"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+".csv",filtrados().slice().reverse());
+});
+
+/* ================= USUÁRIOS E CLIENTES (admin) ================= */
+function ajustarNovoUsuario(){$("nu-cliente-box").hidden=$("nu-papel").value!=="cliente"}
+$("nu-papel").addEventListener("change",ajustarNovoUsuario);
+$("f-novo-usuario").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var nome=$("nu-nome").value.trim(),email=$("nu-email").value.trim(),senha=$("nu-senha").value,
+      papel=$("nu-papel").value,cid=papel==="cliente"?$("nu-cliente").value:null,m=$("nu-msg"),b=$("nu-criar");
+  if(!nome||!email){msg(m,"bad","Informe o nome e o e-mail.");return}
+  if(senha.length<8){msg(m,"bad","A senha provisória precisa ter pelo menos 8 caracteres.");return}
+  if(papel==="cliente"&&!cid){msg(m,"bad","Selecione a empresa do cliente.");return}
+  b.disabled=true;m.hidden=true;
+  try{
+    var tmp=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false,storageKey:"sb-cadastro-temp"}});
+    var r=await tmp.auth.signUp({email:email,password:senha,options:{data:{nome:nome}}});
+    if(r.error)throw r.error;
+    var u=r.data.user;
+    if(!u||(u.identities&&u.identities.length===0))throw new Error("already registered");
+    var up=await sb.from("perfis").update({nome:nome,papel:papel,cliente_id:cid}).eq("id",u.id).select("id");
+    if(up.error)throw up.error;
+    if(!up.data||!up.data.length)throw new Error("O usuário foi criado, mas o perfil não foi definido. Ajuste na lista abaixo.");
+    msg(m,r.data.session?"ok":"warn",r.data.session?"Usuário cadastrado. Ele já pode entrar com o e-mail e a senha provisória."
+      :"Usuário cadastrado, mas o Supabase está exigindo confirmação de e-mail: ele só consegue entrar depois de clicar no link que recebeu.");
+    $("nu-nome").value="";$("nu-email").value="";$("nu-senha").value="";
+  }catch(err){msg(m,"bad",traduz(err))}
+  b.disabled=false;carregarUsuarios();
+});
+
+async function carregarUsuarios(){
+  var er=$("us-erro");er.hidden=true;
+  var r=await sb.from("perfis").select("id,nome,email,papel,cliente_id,ativo,criado_em").order("criado_em");
+  if(r.error){msg(er,"bad","Não foi possível carregar os usuários: "+traduz(r.error));return}
+  var tb=$("us-lista");tb.textContent="";
+  (r.data||[]).forEach(function(u){
+    var eu=u.id===perfil.id,tr=el("tr");
+    var iNome=el("input");iNome.type="text";iNome.value=u.nome||"";iNome.maxLength=80;iNome.setAttribute("aria-label","Nome");
+    var sPapel=el("select");sPapel.setAttribute("aria-label","Perfil");
+    ["cliente","interno","admin","pendente"].forEach(function(k){var o=el("option",null,PAPEIS[k]);o.value=k;sPapel.appendChild(o)});
+    sPapel.value=u.papel;sPapel.disabled=eu;
+    var sCli=el("select");sCli.setAttribute("aria-label","Empresa");
+    var o0=el("option",null,"(nenhuma)");o0.value="";sCli.appendChild(o0);
+    clientes.forEach(function(c){var o=el("option",null,c.nome);o.value=c.id;sCli.appendChild(o)});
+    sCli.value=u.cliente_id||"";
+    function aj(){sCli.disabled=sPapel.value!=="cliente";if(sCli.disabled)sCli.value=""}
+    aj();sPapel.addEventListener("change",aj);
+    var cAtivo=el("input");cAtivo.type="checkbox";cAtivo.checked=!!u.ativo;cAtivo.disabled=eu;cAtivo.setAttribute("aria-label","Ativo");
+    var bSalvar=el("button","btn small","Salvar");bSalvar.type="button";
+    bSalvar.addEventListener("click",async function(){
+      if(sPapel.value==="cliente"&&!sCli.value){msg(er,"bad","Selecione a empresa para o usuário "+(u.email||"")+".");return}
+      bSalvar.disabled=true;er.hidden=true;
+      var up=await sb.from("perfis").update({nome:iNome.value.trim(),papel:sPapel.value,cliente_id:sPapel.value==="cliente"?sCli.value:null,ativo:cAtivo.checked}).eq("id",u.id);
+      bSalvar.disabled=false;
+      if(up.error){msg(er,"bad","Não foi possível salvar: "+traduz(up.error));return}
+      bSalvar.textContent="Salvo";setTimeout(function(){bSalvar.textContent="Salvar"},1500);
+      if(eu){perfil.nome=iNome.value.trim();$("u-nome").textContent=perfil.nome||perfil.email}
+    });
+    [iNome,null,sPapel,sCli,cAtivo,bSalvar].forEach(function(n,k){
+      var td=el("td");if(k===1){td.textContent=u.email||"";td.className="mono"}else td.appendChild(n);tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+}
+function renderClientes(){
+  var tb=$("cl-lista");tb.textContent="";
+  clientes.forEach(function(c){
+    var tr=el("tr");
+    tr.appendChild(el("td",null,c.nome));
+    tr.appendChild(el("td",null,c.ativo?"Ativo":"Inativo"));
+    var td=el("td"),b=el("button","btn small",c.ativo?"Desativar":"Reativar");b.type="button";
+    b.addEventListener("click",async function(){
+      b.disabled=true;
+      var r=await sb.from("clientes").update({ativo:!c.ativo}).eq("id",c.id);
+      if(r.error){b.disabled=false;msg($("cl-erro"),"bad",traduz(r.error));return}
+      c.ativo=!c.ativo;atualizarClientes();
+    });
+    td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
+  });
+}
+function atualizarClientes(){
+  opcoesClientes($("cliente"),"Selecione o cliente…",true);
+  opcoesClientes($("fil-cliente"),"Todos os clientes",false);
+  opcoesClientes($("nu-cliente"),"Selecione…",true);
+  renderClientes();
+}
+$("f-cliente").addEventListener("submit",async function(e){
+  e.preventDefault();
+  var nome=$("nc-nome").value.trim().toUpperCase(),er=$("cl-erro");er.hidden=true;
+  if(!nome){msg(er,"bad","Informe o nome do cliente.");return}
+  var r=await sb.from("clientes").insert({nome:nome}).select("id,nome,ativo").single();
+  if(r.error){msg(er,"bad",/duplicate/i.test(r.error.message)?"Já existe um cliente com esse nome.":traduz(r.error));return}
+  clientes.push(r.data);clientes.sort(function(a,b){return a.nome.localeCompare(b.nome,"pt-BR")});
+  $("nc-nome").value="";atualizarClientes();
+});
+
+/* ================= NAVEGAÇÃO ================= */
+function rota(){
+  if(!perfil||$("app").hidden)return;
+  var h=location.hash.replace("#","");
+  if(h==="usuarios"&&!admin())h="";
+  if(h!=="pedidos"&&h!=="usuarios")h="novo";
+  ["novo","pedidos","usuarios"].forEach(function(v){
+    $("v-"+v).hidden=v!==h;$("t-"+v).setAttribute("aria-current",v===h?"page":"false");
+  });
+  if(h==="pedidos")carregarPedidos();
+  if(h==="usuarios"){ajustarNovoUsuario();carregarUsuarios();renderClientes()}
+}
+window.addEventListener("hashchange",rota);
+
+iniciar().catch(function(e){$("v-carregando").textContent="Não foi possível iniciar o sistema: "+traduz(e)});
+})();
+</script>
+</body>
+</html>

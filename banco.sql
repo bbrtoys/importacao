@@ -189,3 +189,26 @@ grant execute on function public.existe_admin() to anon, authenticated;
 insert into public.clientes (nome) values
   ('BUMERANG'), ('PIRLIMPIMPIM'), ('ESTRIPULIA'), ('KIMANIA'), ('B DA HORA'),
   ('TOY BOY'), ('BIG FESTA'), ('PIRUETA'), ('BRINQUEDOLÂNDIA'), ('SUPERLEGAL');
+
+-- =====================================================================
+-- Dashboard de itens: mínimos para importação por código + tempo real
+-- =====================================================================
+create table public.produtos (
+  ref text primary key check (ref <> '' and ref = upper(btrim(ref))),
+  descricao text not null default '',
+  minimo integer not null default 0 check (minimo >= 0),
+  atualizado_em timestamptz not null default now()
+);
+alter table public.produtos enable row level security;
+create policy produtos_ler on public.produtos for select to authenticated
+  using (public.sou_interno());
+create policy produtos_incluir on public.produtos for insert to authenticated
+  with check (public.sou_interno());
+create policy produtos_alterar on public.produtos for update to authenticated
+  using (public.sou_interno()) with check (public.sou_interno());
+create policy produtos_excluir on public.produtos for delete to authenticated
+  using (public.meu_papel() = 'admin');
+revoke all on public.produtos from anon, authenticated;
+grant select, insert, update, delete on public.produtos to authenticated;
+
+alter publication supabase_realtime add table public.pedidos, public.pedido_itens, public.produtos;

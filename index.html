@@ -740,7 +740,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
       </div>
       <div class="block"><div class="actions">
         <button type="button" class="btn" id="r-copiar">Copiar pedido</button>
-        <button type="button" class="btn" id="r-baixar">Baixar planilha (CSV)</button>
+        <button type="button" class="btn" id="r-baixar">Baixar planilha (Excel)</button>
         <button type="button" class="btn primary" id="r-novo">Fazer outro pedido</button>
       </div></div>
     </div>
@@ -765,7 +765,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
           <label for="fil-busca">Buscar
             <input id="fil-busca" type="search" placeholder="Nº do pedido, código ou produto">
           </label>
-          <button type="button" class="btn" id="p-baixar">Baixar lista (CSV)</button>
+          <button type="button" class="btn" id="p-baixar">Baixar lista (Excel)</button>
         </div>
         <div class="msg bad" id="p-erro" hidden></div>
       </div>
@@ -808,7 +808,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
           <label for="d-busca">Buscar
             <input id="d-busca" type="search" placeholder="Código ou produto">
           </label>
-          <button type="button" class="btn" id="d-baixar">Baixar (CSV)</button>
+          <button type="button" class="btn" id="d-baixar">Baixar (Excel)</button>
         </div>
         <div class="check"><input type="checkbox" id="d-sempedido"><label for="d-sempedido" style="display:inline;font-weight:400">Mostrar também produtos com mínimo cadastrado que ainda não têm pedido</label></div>
         <div class="hint">Os itens são somados pelo código. O mínimo para importação é digitado na própria tabela e vale para o código.</div>
@@ -1781,7 +1781,7 @@ function mostrarIntro(forcar){
 $("intro").addEventListener("animationend",function(e){if(e.target===$("intro")&&e.animationName==="intro-sair"&&introAtiva)introAtiva()});
 $("mc-intro").addEventListener("click",function(){window.scrollTo(0,0);mostrarIntro(true)});
 
-/* ---------- recibo, cópia e CSV ---------- */
+/* ---------- recibo, cópia e Excel ---------- */
 function textoPedido(p){
   var l=["PEDIDO DE IMPORTAÇÃO "+p.numero,"Cliente: "+p.cliente,"Data: "+fmtData(p.criado_em),"Etapa: "+etapaNome(p.status)];
   if(p.responsavel)l.push("Responsável: "+p.responsavel);
@@ -1791,17 +1791,57 @@ function textoPedido(p){
   if(p.obs)l.push("","Observações: "+p.obs);
   return l.join("\n");
 }
-function baixarCsv(nome,lista){
-  function c(v){v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'}
-  var out=[["Pedido","Data","Cliente","Responsável","Etapa","Item","Código","Produto","Loja","Quantidade","Observações"].map(c).join(";")];
+function xmlEsc(v){return String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function colLetra(i){var s="";i++;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s}
+/* cols: [[título, tipo]] — tipo: "t" texto, "i" inteiro, "d" decimal, "r" reais */
+async function baixarXlsx(nome,folha,cols,linhas){
+  if(!window.JSZip){alert("Não foi possível gerar o arquivo Excel. Recarregue a página e tente de novo.");return}
+  var ESTILO={t:2,i:3,d:4,r:5},larg=cols.map(function(c){return Math.max(8,c[0].length+2)});
+  function cel(v,ci,ri){
+    var ref=colLetra(ci)+ri,tp=cols[ci][1]||"t";
+    if(v==null||v==="")return "";
+    if(tp!=="t"&&typeof v==="number"&&isFinite(v)){larg[ci]=Math.max(larg[ci],String(Math.round(v)).length+5);return '<c r="'+ref+'" s="'+ESTILO[tp]+'"><v>'+v+'</v></c>'}
+    var t=String(v);larg[ci]=Math.min(60,Math.max(larg[ci],t.length+2));
+    return '<c r="'+ref+'" s="2" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(t)+'</t></is></c>';
+  }
+  var rows=['<row r="1">'+cols.map(function(c,ci){return '<c r="'+colLetra(ci)+'1" s="1" t="inlineStr"><is><t>'+xmlEsc(c[0])+'</t></is></c>'}).join("")+'</row>'];
+  linhas.forEach(function(l,k){rows.push('<row r="'+(k+2)+'">'+l.map(function(v,ci){return cel(v,ci,k+2)}).join("")+'</row>')});
+  var ult=colLetra(cols.length-1)+(linhas.length+1);
+  var sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+
+    larg.map(function(w,i){return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'}).join("")+'</cols><sheetData>'+rows.join("")+'</sheetData>'+
+    (linhas.length?'<autoFilter ref="A1:'+ult+'"/>':'')+'</worksheet>';
+  var styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.0"/><numFmt numFmtId="165" formatCode="&quot;R$&quot; #,##0.00"/></numFmts>'+
+    '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts>'+
+    '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF09406D"/><bgColor indexed="64"/></patternFill></fill></fills>'+
+    '<borders count="2"><border/><border><left style="thin"><color rgb="FFDDE3EA"/></left><right style="thin"><color rgb="FFDDE3EA"/></right><top style="thin"><color rgb="FFDDE3EA"/></top><bottom style="thin"><color rgb="FFDDE3EA"/></bottom></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6">'+
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+    '<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>'+
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="center"/></xf>'+
+    '<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'+
+    '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'+
+    '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'+
+    '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  var z=new JSZip();
+  z.file("[Content_Types].xml",'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');
+  z.file("_rels/.rels",'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  z.file("xl/workbook.xml",'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="'+xmlEsc(String(folha).replace(/[\\\/\?\*\[\]:]/g," ").slice(0,31))+'" sheetId="1" r:id="rId1"/></sheets>'+(linhas.length?'<definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">\''+xmlEsc(String(folha).slice(0,31))+'\'!$A$1:$'+colLetra(cols.length-1)+'$'+(linhas.length+1)+'</definedName></definedNames>':'')+'</workbook>');
+  z.file("xl/_rels/workbook.xml.rels",'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+  z.file("xl/worksheets/sheet1.xml",sheet);z.file("xl/styles.xml",styles);
+  var blob=await z.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",compression:"DEFLATE"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href)},4000);
+}
+function baixarPedidosXlsx(nome,lista){
+  var cols=[["Pedido","t"],["Data","t"],["Cliente","t"],["Responsável","t"],["Etapa","t"],["Item","i"],["Código","t"],["Produto","t"],["Categoria","t"],["Loja","t"],["Quantidade","i"],["Cx master (un/cx)","i"],["Caixas","d"],["Preço estimado","r"],["Valor estimado","r"],["Observações","t"]];
+  var linhas=[];
   lista.forEach(function(p){p.itens.forEach(function(i,k){
-    var lj=i.loja_id&&lojaPorId(i.loja_id);
-    out.push([p.numero,fmtData(p.criado_em),p.cliente,p.responsavel,etapaNome(p.status),k+1,i.ref,i.produto,lj?lj.nome:"",i.qtd,p.obs].map(c).join(";"));
+    var lj=i.loja_id&&lojaPorId(i.loja_id),c=i.catalogo_id&&cat.porId[i.catalogo_id],preco=c&&c.preco?Number(c.preco):null;
+    linhas.push([p.numero,fmtData(p.criado_em),p.cliente,p.responsavel,etapaNome(p.status),k+1,i.ref,i.produto,c?catDe(c):"",lj?lj.nome:"",i.qtd,
+      c&&c.cx_master?c.cx_master:null,c&&c.cx_master>0?Math.round(i.qtd/c.cx_master*10)/10:null,preco,preco!=null?Math.round(i.qtd*preco*100)/100:null,p.obs]);
   })});
-  var a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob(["﻿"+out.join("\r\n")],{type:"text/csv;charset=utf-8"}));
-  a.download=nome;document.body.appendChild(a);a.click();a.remove();
-  setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+  return baixarXlsx(nome,"Pedidos",cols,linhas);
 }
 function copiar(txt,btn){
   var orig=btn.textContent;
@@ -1831,7 +1871,7 @@ function mostrarRecibo(p){
   $("form").hidden=true;$("cats-lado").hidden=true;$("recibo").hidden=false;window.scrollTo(0,0);
 }
 $("r-copiar").addEventListener("click",function(){if(ultimo)copiar(textoPedido(ultimo),this)});
-$("r-baixar").addEventListener("click",function(){if(ultimo)baixarCsv("pedido-"+ultimo.numero+".csv",[ultimo])});
+$("r-baixar").addEventListener("click",function(){if(ultimo)baixarPedidosXlsx("pedido-"+ultimo.numero+".xlsx",[ultimo])});
 $("r-novo").addEventListener("click",function(){novoFormulario(true);window.scrollTo(0,0)});
 
 /* ================= PAINEL DE PEDIDOS ================= */
@@ -1979,7 +2019,7 @@ function renderPainel(){
       a.appendChild(sel);
     }
     var bc=el("button","btn small","Copiar");bc.type="button";bc.addEventListener("click",function(){copiar(textoPedido(p),bc)});a.appendChild(bc);
-    var bd=el("button","btn small","Baixar CSV");bd.type="button";bd.addEventListener("click",function(){baixarCsv("pedido-"+p.numero+".csv",[p])});a.appendChild(bd);
+    var bd=el("button","btn small","Baixar Excel");bd.type="button";bd.addEventListener("click",function(){baixarPedidosXlsx("pedido-"+p.numero+".xlsx",[p])});a.appendChild(bd);
     if(admin()){
       var bx=el("button","btn small danger","Excluir");bx.type="button";var armado=false;
       bx.addEventListener("click",async function(){
@@ -2005,7 +2045,7 @@ $("fil-busca").addEventListener("input",renderPainel);
 $("p-atualizar").addEventListener("click",carregarPedidos);
 $("p-baixar").addEventListener("click",function(){
   var d=new Date(),p=function(n){return String(n).padStart(2,"0")};
-  baixarCsv("pedidos-importacao-"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+".csv",filtrados().slice().reverse());
+  baixarPedidosXlsx("pedidos-importacao-"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+".xlsx",filtrados().slice().reverse());
 });
 
 /* ================= USUÁRIOS E CLIENTES (admin) ================= */
@@ -2316,17 +2356,13 @@ function renderDashboard(){
 $("d-busca").addEventListener("input",renderDashboard);
 $("d-sempedido").addEventListener("change",renderDashboard);
 $("d-baixar").addEventListener("click",function(){
-  var d=linhasDashboard();
-  function c(v){v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'}
-  var out=[["Código","Produto"].concat(d.cols.map(function(x){return x.nome})).concat(["Total pedido","Mínimo para importação","Diferença","Situação"]).map(c).join(";")];
-  d.linhas.forEach(function(l){
-    out.push([l.ref,l.produto].concat(d.cols.map(function(x){return l.porCliente[x.id]||0}))
-      .concat([l.total,l.minimo||"",l.minimo?l.total-l.minimo:"",l.sit==="atingiu"?"Atingiu":l.sit==="abaixo"?"Abaixo do mínimo":"Sem mínimo"]).map(c).join(";"));
+  var d=linhasDashboard(),dt=new Date(),p=function(n){return String(n).padStart(2,"0")};
+  var cols=[["Código","t"],["Produto","t"]].concat(d.cols.map(function(x){return [x.nome,"i"]})).concat([["Total pedido","i"],["Mínimo para importação","i"],["Diferença","i"],["Situação","t"]]);
+  var linhas=d.linhas.map(function(l){
+    return [l.ref,l.produto].concat(d.cols.map(function(x){return l.porCliente[x.id]||0}))
+      .concat([l.total,l.minimo||null,l.minimo?l.total-l.minimo:null,l.sit==="atingiu"?"Atingiu":l.sit==="abaixo"?"Abaixo do mínimo":"Sem mínimo"]);
   });
-  var a=document.createElement("a"),dt=new Date(),p=function(n){return String(n).padStart(2,"0")};
-  a.href=URL.createObjectURL(new Blob(["\ufeff"+out.join("\r\n")],{type:"text/csv;charset=utf-8"}));
-  a.download="dashboard-itens-"+dt.getFullYear()+p(dt.getMonth()+1)+p(dt.getDate())+".csv";
-  document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},2000);
+  baixarXlsx("dashboard-itens-"+dt.getFullYear()+p(dt.getMonth()+1)+p(dt.getDate())+".xlsx","Dashboard de itens",cols,linhas);
 });
 $("d-lote-salvar").addEventListener("click",async function(){
   var m=$("d-lote-msg"),b=this,linhas=[],ruins=0,vistos={};

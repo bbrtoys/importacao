@@ -907,6 +907,10 @@ function validar(){
   });
   if(inc)erros.push(inc===1?"Um item está incompleto: informe o produto e a quantidade.":inc+" itens estão incompletos: informe o produto e a quantidade de cada um.");
   if(!itensValidos().length&&!itensCatalogo().length&&!inc)erros.push("Informe a quantidade de pelo menos um produto do catálogo.");
+  var ruins=itensCatalogo().filter(function(i){return !qtdValida(cat.porId[i.catalogo_id],i.qtd)});
+  if(ruins.length){
+    erros.push((ruins.length===1?"1 item do catálogo não fecha":fmtInt(ruins.length)+" itens do catálogo não fecham")+" caixa inteira ou meia caixa: "+ruins.slice(0,5).map(function(i){return i.ref}).join(", ")+(ruins.length>5?" e outros":"")+". Ajuste as quantidades marcadas em vermelho (use \"Mostrar só os itens com quantidade\" para achá-las).");
+  }
   return erros;
 }
 $("form").addEventListener("submit",async function(e){
@@ -978,11 +982,16 @@ function textoCel(c,k){
   if(k==="cbm"||k==="cuft"||k==="gw"||k==="nw"){var n=numero(v);return n==null?String(v):n.toLocaleString("pt-BR",{maximumFractionDigits:3})}
   return String(v);
 }
+function passoCx(c){return c.cx_master>0?(c.cx_master%2===0?c.cx_master/2:c.cx_master):0}
+function qtdValida(c,q){return !(q>0)||!(c.cx_master>0)||(q*2)%c.cx_master===0}
 function textoCx(c,q){
   if(!(q>0)||!(c.cx_master>0))return {t:"",fora:false};
+  if(!qtdValida(c,q)){
+    var p=passoCx(c),abaixo=Math.floor(q/p)*p,acima=abaixo+p;
+    return {t:"Use múltiplos de "+fmtInt(p)+(p*2===c.cx_master?" (meia caixa)":" (caixa inteira)")+": "+(abaixo>0?fmtInt(abaixo)+" ou ":"")+fmtInt(acima),fora:true};
+  }
   var n=q/c.cx_master;
-  if(n%1===0)return {t:fmtInt(n)+(n===1?" caixa master":" caixas master"),fora:false};
-  return {t:n.toLocaleString("pt-BR",{maximumFractionDigits:1})+" cx · não fecha caixa ("+fmtInt(c.cx_master)+"/cx)",fora:true};
+  return {t:n.toLocaleString("pt-BR",{maximumFractionDigits:1})+(n<=1?" caixa master":" caixas master"),fora:false};
 }
 function renderChips(){
   var box=$("cat-chips");box.textContent="";
@@ -1025,7 +1034,7 @@ function linhaCat(c){
   });
   var tq=el("td","qtd"),inp=el("input");inp.type="text";inp.inputMode="numeric";inp.maxLength=9;inp.placeholder="0";
   inp.value=q?String(q):"";inp.dataset.id=c.id;inp.setAttribute("aria-label","Quantidade de "+refItem(c)+" "+(c.descricao||""));
-  var cx=textoCx(c,q);tq.appendChild(inp);tq.appendChild(el("span","cx"+(cx.fora?" fora":""),cx.t));tr.appendChild(tq);
+  var cx=textoCx(c,q);if(cx.fora)inp.classList.add("invalid");tq.appendChild(inp);tq.appendChild(el("span","cx"+(cx.fora?" fora":""),cx.t));tr.appendChild(tq);
   return tr;
 }
 function renderCatalogo(){
@@ -1065,6 +1074,7 @@ $("cat-tab").addEventListener("input",function(e){
   var n=parseQtd(v);if(n>0)cat.qtd[c.id]=n;else delete cat.qtd[c.id];
   var tr=inp.closest("tr"),sp=inp.nextSibling,x=textoCx(c,n);
   tr.className=n>0?"tem":"";sp.textContent=x.t;sp.className="cx"+(x.fora?" fora":"");
+  inp.classList.toggle("invalid",x.fora);
   var vr=tr.querySelector("td.volrs");if(vr){var v=valorLinha(c,n);vr.textContent=v||"-";vr.className="n volrs"+(v?"":" vazio")}
   totais();agendarRascunho();
 });

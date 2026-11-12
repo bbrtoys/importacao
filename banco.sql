@@ -335,3 +335,6 @@ create policy config_alterar on public.config for update to authenticated
   using (public.meu_papel() = 'admin') with check (public.meu_papel() = 'admin');
 revoke all on public.config from anon, authenticated;
 grant select, insert, update on public.config to authenticated;
+
+-- criar_pedido passou a recusar itens do catálogo fora de caixa inteira ou meia caixa:
+--   ((qtd * 2) % cx_master) <> 0  ->  erro "Quantidade fora da caixa master ..."

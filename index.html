@@ -55,10 +55,11 @@ nav.tabs a[aria-current="page"]{background:#fff;color:var(--vermelho);border-col
 .strip b{font-family:var(--mono);font-weight:500;color:#fff;font-size:14px}
 .block{padding:22px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--rule)}
 .block:last-child{border-bottom:0}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:end}
 label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .req{color:var(--vermelho)}
+.lbl{display:block}
 input,select,textarea,button{font:inherit;color:inherit}
 input,select,textarea{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:9px 12px;width:100%;color:var(--ink);font-size:14.5px;text-transform:none;letter-spacing:0;font-weight:400}
 select{font-weight:500}
@@ -264,12 +265,12 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
       <div class="block">
         <h2>Cliente</h2>
         <div class="grid2">
-          <label for="cliente" id="cliente-box">Cliente de importação <span class="req">*</span>
+          <label for="cliente" id="cliente-box"><span class="lbl">Cliente de importação <span class="req">*</span></span>
             <select id="cliente"><option value="">Selecione o cliente…</option></select>
           </label>
-          <div id="cliente-fixo-box" hidden>
+          <div id="cliente-fixo-box" hidden style="display:flex;flex-direction:column;gap:5px">
             <label for="cliente-fixo">Cliente de importação</label>
-            <div class="fixo" id="cliente-fixo" style="margin-top:5px"></div>
+            <div class="fixo" id="cliente-fixo"></div>
           </div>
           <label for="responsavel">Responsável pelo pedido
             <input id="responsavel" type="text" maxlength="80" placeholder="Nome de quem está preenchendo">
@@ -386,8 +387,8 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         <details class="lote">
           <summary>Cadastrar mínimos em lote</summary>
           <div class="inner">
-            <div class="hint">Cole do Excel uma linha por produto, nas colunas: código, descrição, mínimo. Também aceita só código e mínimo.</div>
-            <textarea id="d-lote-txt" placeholder="REF001&#9;Boneca articulada&#9;1200"></textarea>
+            <div class="hint">Cole do Excel uma linha por produto com o <b>código</b> e a <b>quantidade mínima</b>. A descrição é opcional: se vier, coloque entre o código e o mínimo.</div>
+            <textarea id="d-lote-txt" placeholder="REF001&#9;1200&#10;REF002&#9;Boneca articulada&#9;800"></textarea>
             <div class="msg" id="d-lote-msg" hidden></div>
             <div><button type="button" class="btn" id="d-lote-salvar">Salvar mínimos</button></div>
           </div>
@@ -402,17 +403,17 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
       <div class="block">
         <h2>Cadastrar usuário</h2>
         <div class="grid3">
-          <label for="nu-nome">Nome <span class="req">*</span><input id="nu-nome" type="text" maxlength="80" autocomplete="off"></label>
-          <label for="nu-email">E-mail <span class="req">*</span><input id="nu-email" type="email" autocomplete="off"></label>
-          <label for="nu-senha">Senha provisória <span class="req">*</span><input id="nu-senha" type="text" minlength="8" autocomplete="off" placeholder="mínimo 8 caracteres"></label>
-          <label for="nu-papel">Perfil <span class="req">*</span>
+          <label for="nu-nome"><span class="lbl">Nome <span class="req">*</span></span><input id="nu-nome" type="text" maxlength="80" autocomplete="off"></label>
+          <label for="nu-email"><span class="lbl">E-mail <span class="req">*</span></span><input id="nu-email" type="email" autocomplete="off"></label>
+          <label for="nu-senha"><span class="lbl">Senha provisória <span class="req">*</span></span><input id="nu-senha" type="text" minlength="8" autocomplete="off" placeholder="mínimo 8 caracteres"></label>
+          <label for="nu-papel"><span class="lbl">Perfil <span class="req">*</span></span>
             <select id="nu-papel">
               <option value="cliente">Cliente de importação</option>
               <option value="interno">Interno (vê todos os pedidos)</option>
               <option value="admin">Administrador</option>
             </select>
           </label>
-          <label for="nu-cliente" id="nu-cliente-box">Empresa do cliente <span class="req">*</span>
+          <label for="nu-cliente" id="nu-cliente-box"><span class="lbl">Empresa do cliente <span class="req">*</span></span>
             <select id="nu-cliente"><option value="">Selecione…</option></select>
           </label>
         </div>
@@ -1098,19 +1099,24 @@ $("d-lote-salvar").addEventListener("click",async function(){
   $("d-lote-txt").value.replace(/\r/g,"").split("\n").forEach(function(l){
     if(!l.trim())return;
     var c=l.split(l.indexOf("\t")>=0?"\t":";").map(function(x){return x.trim()});
-    var ref=(c[0]||"").toUpperCase().slice(0,40),desc=c.length>=3?c[1].slice(0,200):"",min=parseQtd(c.length>=3?c[2]:c[1]);
-    if(!ref||c.length<2||/^(c[oó]digo|ref\.?|refer[eê]ncia)$/i.test(c[0])){ruins++;return}
+    var ref=(c[0]||"").toUpperCase().slice(0,40);
+    var iMin=-1;
+    for(var k=c.length-1;k>=1;k--){if(c[k]!==""){iMin=k;break}}
+    var bruto=iMin>0?c[iMin]:"",min=parseQtd(bruto);
+    if(/^(c[oó]digo|ref\.?|refer[eê]ncia)$/i.test(c[0]))return;
+    if(!ref||!/^[\d.\s]+$/.test(bruto)||min<=0){ruins++;return}
+    var desc=c.slice(1,iMin).filter(function(x){return x!==""}).join(" ").slice(0,200);
     vistos[ref]={ref:ref,descricao:desc||(produtos[ref]&&produtos[ref].descricao)||"",minimo:min,atualizado_em:new Date().toISOString()};
   });
   linhas=Object.keys(vistos).map(function(k){return vistos[k]});
-  if(!linhas.length){msg(m,"bad","Nenhuma linha válida. Use as colunas: código, descrição, mínimo.");return}
+  if(!linhas.length){msg(m,"bad","Nenhuma linha válida. Cada linha precisa do código e da quantidade mínima (maior que zero).");return}
   b.disabled=true;
   for(var i=0;i<linhas.length;i+=500){
     var r=await sb.from("produtos").upsert(linhas.slice(i,i+500),{onConflict:"ref"});
     if(r.error){b.disabled=false;msg(m,"bad","Não foi possível salvar: "+traduz(r.error));return}
   }
   b.disabled=false;$("d-lote-txt").value="";
-  msg(m,"ok",fmtInt(linhas.length)+" produtos salvos."+(ruins?" "+ruins+" linhas ignoradas por estarem incompletas.":""));
+  msg(m,"ok",fmtInt(linhas.length)+" produtos salvos."+(ruins?" "+ruins+(ruins===1?" linha ignorada por não ter":" linhas ignoradas por não terem")+" código e mínimo válidos.":""));
   carregarDashboard();
 });
 

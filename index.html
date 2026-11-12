@@ -317,8 +317,7 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 .big.valor b{color:#fff}
 .big.valor b span{color:rgba(255,255,255,.75);margin:0 3px 0 0}
 .big b.bump{transform:scale(1.06)}
-.resumo-fixo #ir-enviar{align-self:center;white-space:nowrap}
-@media (max-width:900px){.big-cards{display:flex;overflow-x:auto;scrollbar-width:none}.big-cards::-webkit-scrollbar{display:none}.big{flex:0 0 auto;min-width:120px}.big b{overflow:visible}.big.valor{order:-1}.resumo-fixo{padding:10px 12px;flex-wrap:wrap}.resumo-fixo #ir-enviar{width:100%;justify-content:center}}
+@media (max-width:900px){.big-cards{display:flex;overflow-x:auto;scrollbar-width:none}.big-cards::-webkit-scrollbar{display:none}.big{flex:0 0 auto;min-width:120px}.big b{overflow:visible}.big.valor{order:-1}.resumo-fixo{padding:10px 12px;flex-wrap:wrap}}
 @media (prefers-reduced-motion:reduce){.big b{transition:none}}
 #zoom{position:fixed;inset:0;z-index:60;background:rgba(9,20,32,.75);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 #zoom[hidden]{display:none}
@@ -565,7 +564,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         <div class="fativos" id="cat-ativos" hidden></div>
         <div class="msg bad" id="cat-erro" hidden></div>
         <div class="cat-wrap"><table class="cat" id="cat-tab"></table></div>
-        <details class="lote" id="fora">
+        <details class="lote" id="fora" hidden style="display:none">
           <summary>Adicionar item fora do catálogo</summary>
           <div class="inner">
             <div class="items">
@@ -588,7 +587,6 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
           <div class="big valor"><small>Valor estimado</small><b><span>R$</span><i id="t-valor" style="font-style:normal">0,00</i></b></div>
           <div class="big"><small>Volume</small><b><i id="t-cbm" style="font-style:normal">0,00</i><span>m³</span></b></div>
         </div>
-        <a class="btn small" href="#fim-pedido" id="ir-enviar">Revisar e enviar</a>
       </div>
       <div class="block" id="fim-pedido">
         <label for="obs">Observações
@@ -938,7 +936,7 @@ function montarApp(){
   $("cliente-box").hidden=!interno();$("cliente-fixo-box").hidden=interno();
   $("cliente-fixo").textContent=nomeCliente(perfil.cliente_id);
   var podeEnviar=perfil.papel==="cliente";
-  $("enviar").hidden=!podeEnviar;$("ir-enviar").hidden=!podeEnviar;
+  $("enviar").hidden=!podeEnviar;
   $("fil-cliente-box").hidden=!interno();
   opcoesClientes($("cliente"),"Selecione o cliente…",true);
   opcoesClientes($("fil-cliente"),"Todos os clientes",false);
@@ -1030,8 +1028,7 @@ function renderLinhas(focar){
   totais();
 }
 function itensValidos(){
-  return st.itens.map(function(i){return {ref:i.ref.trim(),produto:i.produto.trim(),qtd:parseQtd(i.qtd)}})
-    .filter(function(i){return (i.ref||i.produto)&&i.qtd>0});
+  return []; /* itens fora do catálogo desativados: o pedido usa só o catálogo */
 }
 function bigSet(id,txt){
   var n=$(id);if(n.textContent===txt)return;n.textContent=txt;
@@ -1130,11 +1127,6 @@ function validar(){
   document.querySelectorAll("#form .invalid").forEach(function(n){n.classList.remove("invalid")});
   if(perfil.papel!=="cliente")erros.push("Os pedidos são enviados pelos usuários dos clientes.");
   var inc=0;
-  st.itens.forEach(function(it,i){
-    var tem=it.ref.trim()||it.produto.trim(),q=parseQtd(it.qtd);
-    if(tem&&q<=0){inc++;$("it-qtd-"+i).classList.add("invalid")}
-    if(!tem&&q>0){inc++;$("it-produto-"+i).classList.add("invalid")}
-  });
   if(inc)erros.push(inc===1?"Um item está incompleto: informe o produto e a quantidade.":inc+" itens estão incompletos: informe o produto e a quantidade de cada um.");
   if(!itensValidos().length&&!itensCatalogo().length&&!inc)erros.push("Informe a quantidade de pelo menos um produto do catálogo.");
   var ruins=itensCatalogo().filter(function(i){return !qtdValida(cat.porId[i.catalogo_id],i.qtd)});
@@ -1397,7 +1389,6 @@ $("seg-so").addEventListener("click",function(){if(!cat.so){cat.so=true;renderCa
     }
   });
 })();
-$("ir-enviar").addEventListener("click",function(e){e.preventDefault();$("fim-pedido").scrollIntoView({behavior:"smooth",block:"center"});setTimeout(function(){$("enviar").focus()},400)});
 
 /* imagens: URLs assinadas pedidas em lote só para as linhas que aparecem na tela */
 function prepararObservador(){

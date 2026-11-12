@@ -2712,6 +2712,222 @@
         font-size: 10.5px;
         color: var(--muted);
       }
+      /* quantidade única + botão para dividir entre lojas */
+      .lojas-wrap {
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        min-width: 0;
+      }
+      .lojas-wrap .lojas-chips {
+        margin-left: 0;
+        justify-content: flex-end;
+      }
+      .lojas-dica {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        text-align: right;
+        max-width: 520px;
+        line-height: 1.35;
+      }
+      .lojas-dica b {
+        color: var(--ink);
+      }
+      button.loja-chip {
+        font: inherit;
+        color: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      button.loja-chip:hover {
+        border-color: #9db3cc;
+      }
+      button.loja-chip[aria-pressed="true"] {
+        border-color: var(--lc, #2f7be0);
+        box-shadow: 0 0 0 2px var(--lc, #2f7be0);
+      }
+      button.loja-chip .sel {
+        display: none;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--lc, #2f7be0);
+      }
+      button.loja-chip[aria-pressed="true"] .sel {
+        display: block;
+      }
+      table.cat th.qtd-l {
+        width: 132px;
+        min-width: 132px;
+      }
+      table.cat th.qtd-l small {
+        display: block;
+        margin-top: 3px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0;
+        text-transform: none;
+        background: #fff;
+        border-radius: 8px;
+        padding: 2px 8px;
+        white-space: normal;
+        line-height: 1.2;
+      }
+      table.cat td.ql .qwrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      table.cat td.ql .qwrap input {
+        margin: 0;
+      }
+      table.cat td.ql button.mais {
+        flex: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1.5px solid var(--azul, #0b3d6e);
+        background: #fff;
+        color: var(--azul, #0b3d6e);
+        font: 700 18px/1 var(--mono, monospace);
+        cursor: pointer;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      table.cat td.ql button.mais:hover {
+        background: var(--azul, #0b3d6e);
+        color: #fff;
+      }
+      table.cat td.ql .dist {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        justify-content: center;
+        margin-top: 4px;
+        font: 600 11px var(--mono, monospace);
+        color: var(--ink);
+      }
+      table.cat td.ql .dist[hidden] {
+        display: none;
+      }
+      table.cat td.ql .dist .dp {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+      }
+      table.cat td.ql .dist .dp.fora {
+        color: var(--vermelho);
+      }
+      table.cat td.ql .dist i,
+      dialog.lojas-dlg .lj-nome i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        flex: none;
+      }
+      dialog.lojas-dlg {
+        border: 0;
+        border-radius: 20px;
+        padding: 0;
+        width: min(460px, calc(100vw - 32px));
+        box-shadow: 0 24px 60px rgba(10, 30, 60, 0.28);
+        color: var(--ink);
+      }
+      dialog.lojas-dlg::backdrop {
+        background: rgba(10, 25, 50, 0.45);
+        backdrop-filter: blur(2px);
+      }
+      dialog.lojas-dlg[open] {
+        animation: dlg-in 0.18s ease-out;
+      }
+      dialog.lojas-dlg .corpo {
+        padding: 24px 24px 8px;
+      }
+      dialog.lojas-dlg h3 {
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      dialog.lojas-dlg .sub {
+        margin: 0 0 2px;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      dialog.lojas-dlg .sub b {
+        color: var(--ink);
+      }
+      dialog.lojas-dlg .lj-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      dialog.lojas-dlg .lj-lin {
+        display: grid;
+        grid-template-columns: 1fr 96px;
+        align-items: center;
+        gap: 2px 12px;
+        border: 1px solid var(--rule);
+        border-radius: 12px;
+        padding: 8px 12px;
+      }
+      dialog.lojas-dlg .lj-nome {
+        text-transform: none;
+        letter-spacing: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        min-width: 0;
+      }
+      dialog.lojas-dlg .lj-lin input {
+        width: 96px;
+        text-align: center;
+        font-family: var(--mono, monospace);
+        font-size: 14px;
+        padding: 6px;
+      }
+      dialog.lojas-dlg .lj-lin .cx {
+        grid-column: 2;
+        font-size: 10.5px;
+        color: var(--muted);
+        text-align: center;
+        min-height: 12px;
+      }
+      dialog.lojas-dlg .lj-lin .cx.fora {
+        color: var(--vermelho);
+        font-weight: 600;
+      }
+      dialog.lojas-dlg .lj-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 24px 0;
+        font-size: 14px;
+      }
+      dialog.lojas-dlg .lj-total b {
+        font-family: var(--mono, monospace);
+      }
+      dialog.lojas-dlg .acoes {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        padding: 16px 24px 22px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        dialog.lojas-dlg[open] {
+          animation: none;
+        }
+      }
       .resumo-lojas {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -3919,6 +4135,25 @@
         </button>
       </div>
     </dialog>
+    <dialog class="lojas-dlg" id="dlg-lojas" aria-labelledby="dlg-lojas-t">
+      <div class="corpo">
+        <h3 id="dlg-lojas-t">Dividir entre lojas</h3>
+        <p class="sub">
+          <b id="dlg-lojas-ref"></b> <span id="dlg-lojas-desc"></span>
+        </p>
+        <p class="sub">Informe quantas unidades vão para cada loja.</p>
+        <div class="lj-lista" id="dlg-lojas-linhas"></div>
+      </div>
+      <div class="lj-total">
+        <span>Total do produto</span><b id="dlg-lojas-total">0</b>
+      </div>
+      <div class="acoes">
+        <button type="button" class="btn" id="dlg-lojas-nao">Cancelar</button
+        ><button type="button" class="btn primary" id="dlg-lojas-sim">
+          Aplicar
+        </button>
+      </div>
+    </dialog>
     <div id="zoom" hidden>
       <figure>
         <img id="zoom-img" alt="" />
@@ -4585,20 +4820,45 @@
           m.appendChild(t);
           box.appendChild(m);
           if (cat.lojas.length) {
-            var ch = el("div", "lojas-chips");
+            var wrap = el("div", "lojas-wrap"),
+              dica = el("p", "lojas-dica"),
+              ch = el("div", "lojas-chips");
+            dica.appendChild(
+              document.createTextNode(
+                "Escolha a loja que vai receber a quantidade digitada. Para dividir um produto entre lojas, use o botão "
+              )
+            );
+            dica.appendChild(el("b", null, "+"));
+            dica.appendChild(
+              document.createTextNode(" ao lado da quantidade e indique a loja.")
+            );
+            wrap.appendChild(dica);
             cat.lojas.forEach(function (l, i) {
-              var c = el("div", "loja-chip"),
+              var c = el("button", "loja-chip"),
                 bar = el("i");
+              c.type = "button";
+              c.dataset.loja = l.id;
+              c.style.setProperty("--lc", corLoja(i));
+              c.setAttribute(
+                "aria-pressed",
+                l.id === cat.lojaAtiva ? "true" : "false"
+              );
               bar.style.background = corLoja(i);
               c.appendChild(bar);
               c.appendChild(marcaEl(logoLoja(l), l.nome, 34, corLoja(i)));
               var tx = el("div");
               tx.appendChild(el("b", null, l.nome));
               if (l.endereco) tx.appendChild(el("small", null, l.endereco));
+              tx.appendChild(el("span", "sel", "Recebendo a quantidade"));
               c.appendChild(tx);
               ch.appendChild(c);
             });
-            box.appendChild(ch);
+            ch.addEventListener("click", function (e) {
+              var b = e.target.closest("button.loja-chip");
+              if (b) definirLojaAtiva(b.dataset.loja);
+            });
+            wrap.appendChild(ch);
+            box.appendChild(wrap);
           }
         }
         $("rows").addEventListener("input", function (e) {
@@ -5054,6 +5314,8 @@
             if (!cat.porId[k.split("@")[0]]) delete cat.qtd[k];
           });
           cat.lojas = multiLojas();
+          if (!lojaPorId(cat.lojaAtiva) || !cat.lojas.length)
+            cat.lojaAtiva = cat.lojas.length ? cat.lojas[0].id : null;
           renderCliTopo();
           renderCatalogo();
           if (
@@ -5297,6 +5559,160 @@
                 })
             : "";
         }
+        function lojaAtivaIdx() {
+          for (var i = 0; i < cat.lojas.length; i++)
+            if (cat.lojas[i].id === cat.lojaAtiva) return i;
+          return 0;
+        }
+        function thQtdLoja() {
+          var th = el("th", "qtd-l num"),
+            ia = lojaAtivaIdx(),
+            sm = el("small", null, "para: " + cat.lojas[ia].nome);
+          th.appendChild(document.createTextNode("QUANTIDADE"));
+          sm.style.color = corLoja(ia);
+          th.appendChild(sm);
+          return th;
+        }
+        function distEl(c) {
+          var d = el("span", "dist"),
+            ativa = lojaAtivaIdx(),
+            outras = false;
+          cat.lojas.forEach(function (l, i) {
+            var q = cat.qtd[chaveQ(c.id, l.id)] || 0;
+            if (!q) return;
+            if (i !== ativa) outras = true;
+            var sp = el("span", "dp" + (textoCx(c, q).fora ? " fora" : "")),
+              dot = el("i");
+            dot.style.background = corLoja(i);
+            sp.appendChild(dot);
+            sp.appendChild(document.createTextNode(fmtInt(q)));
+            sp.title = l.nome + ": " + fmtInt(q);
+            d.appendChild(sp);
+          });
+          d.hidden = !outras;
+          return d;
+        }
+        function recriarLinhas(ids) {
+          var body = $("cat-corpo");
+          if (!body) return;
+          body.querySelectorAll("tr[data-id]").forEach(function (tr) {
+            var c = cat.porId[tr.dataset.id];
+            if (c && (!ids || ids.indexOf(String(c.id)) >= 0))
+              tr.replaceWith(linhaCat(c));
+          });
+          body
+            .querySelectorAll("img[data-cat]:not([src])")
+            .forEach(function (im) {
+              if (cat.obs) cat.obs.observe(im);
+              else pedirImagem(im.dataset.cat);
+            });
+        }
+        function definirLojaAtiva(id) {
+          if (!lojaPorId(id) || cat.lojaAtiva === id) return;
+          cat.lojaAtiva = id;
+          document.querySelectorAll("button.loja-chip").forEach(function (b) {
+            b.setAttribute(
+              "aria-pressed",
+              b.dataset.loja === id ? "true" : "false"
+            );
+          });
+          var th = document.querySelector("#cat-tab th.qtd-l");
+          if (th) th.replaceWith(thQtdLoja());
+          recriarLinhas();
+        }
+        function abrirDividir(c) {
+          if (!c) return;
+          var dlg = $("dlg-lojas"),
+            lista = $("dlg-lojas-linhas"),
+            primeiro = null;
+          dlg.dataset.id = c.id;
+          $("dlg-lojas-ref").textContent = refItem(c);
+          $("dlg-lojas-desc").textContent =
+            c.descricao || c.descricao_original || "";
+          lista.textContent = "";
+          cat.lojas.forEach(function (l, i) {
+            var lin = el("label", "lj-lin"),
+              nm = el("span", "lj-nome"),
+              dot = el("i"),
+              inp = el("input"),
+              qq = cat.qtd[chaveQ(c.id, l.id)] || 0;
+            dot.style.background = corLoja(i);
+            nm.appendChild(dot);
+            nm.appendChild(document.createTextNode(l.nome));
+            inp.type = "text";
+            inp.inputMode = "numeric";
+            inp.maxLength = 9;
+            inp.placeholder = "0";
+            inp.value = qq ? String(qq) : "";
+            inp.dataset.loja = l.id;
+            inp.setAttribute("aria-label", "Quantidade para " + l.nome);
+            var cx = el("span", "cx");
+            lin.appendChild(nm);
+            lin.appendChild(inp);
+            lin.appendChild(cx);
+            lista.appendChild(lin);
+            if (!primeiro || l.id === cat.lojaAtiva) primeiro = inp;
+          });
+          atualizarDividir();
+          dlg.showModal();
+          if (primeiro) {
+            primeiro.focus();
+            primeiro.select();
+          }
+        }
+        function atualizarDividir() {
+          var c = cat.porId[$("dlg-lojas").dataset.id],
+            tot = 0;
+          if (!c) return;
+          $("dlg-lojas-linhas")
+            .querySelectorAll("input")
+            .forEach(function (inp) {
+              var n = parseQtd(inp.value),
+                x = textoCx(c, n),
+                cx = inp.parentNode.querySelector(".cx");
+              tot += n;
+              cx.textContent = x.t || "";
+              cx.className = "cx" + (x.fora ? " fora" : "");
+              inp.classList.toggle("invalid", !!x.fora);
+            });
+          $("dlg-lojas-total").textContent = fmtInt(tot);
+        }
+        $("dlg-lojas-linhas").addEventListener("input", function (e) {
+          var v = e.target.value.replace(/\D/g, "");
+          if (v !== e.target.value) e.target.value = v;
+          atualizarDividir();
+        });
+        $("dlg-lojas-nao").addEventListener("click", function () {
+          $("dlg-lojas").close();
+        });
+        $("dlg-lojas").addEventListener("click", function (e) {
+          if (e.target === this) this.close();
+        });
+        $("dlg-lojas-sim").addEventListener("click", function () {
+          var dlg = $("dlg-lojas"),
+            c = cat.porId[dlg.dataset.id];
+          if (c) {
+            dlg
+              .querySelectorAll("#dlg-lojas-linhas input")
+              .forEach(function (inp) {
+                var n = parseQtd(inp.value),
+                  k = chaveQ(c.id, inp.dataset.loja);
+                if (n > 0) cat.qtd[k] = n;
+                else delete cat.qtd[k];
+              });
+            recriarLinhas([String(c.id)]);
+            totais();
+            agendarRascunho();
+            renderChips();
+          }
+          dlg.close();
+        });
+        $("dlg-lojas-linhas").addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            $("dlg-lojas-sim").click();
+          }
+        });
         function linhaCat(c) {
           var q = qtdTotal(c.id),
             tr = el("tr", q > 0 ? "tem" : "");
@@ -5330,7 +5746,8 @@
             tr.appendChild(el("td", cls + (t ? "" : " vazio"), t || "-"));
           });
           function campo(td, loja) {
-            var qq = cat.qtd[chaveQ(c.id, loja && loja.id)] || 0,
+            var wrapq = loja ? el("div", "qwrap") : td,
+              qq = cat.qtd[chaveQ(c.id, loja && loja.id)] || 0,
               inp = el("input");
             inp.type = "text";
             inp.inputMode = "numeric";
@@ -5346,16 +5763,28 @@
             var cx = textoCx(c, qq);
             if (cx.fora) inp.classList.add("invalid");
             if (qq > 0) td.classList.add(cx.fora ? "q-bad" : "q-ok");
-            td.appendChild(inp);
+            wrapq.appendChild(inp);
+            if (loja) {
+              var bm = el("button", "mais", "+");
+              bm.type = "button";
+              bm.dataset.dividir = c.id;
+              bm.title = "Dividir entre lojas";
+              bm.setAttribute(
+                "aria-label",
+                "Dividir " + refItem(c) + " entre lojas"
+              );
+              wrapq.appendChild(bm);
+              td.appendChild(wrapq);
+            }
             td.appendChild(el("span", "cx" + (cx.fora ? " fora" : ""), cx.t));
+            if (loja) td.appendChild(distEl(c));
           }
           if (cat.lojas.length) {
-            cat.lojas.forEach(function (l, i) {
-              var td = el("td", "ql");
-              td.style.background = corLoja(i) + "14";
-              campo(td, l);
-              tr.appendChild(td);
-            });
+            var ia = lojaAtivaIdx(),
+              td = el("td", "ql");
+            td.style.background = corLoja(ia) + "14";
+            campo(td, cat.lojas[ia]);
+            tr.appendChild(td);
             var tt = el("td", "qtd tot-l" + (q > 0 ? " q-ok" : ""));
             tt.appendChild(el("b", null, q ? fmtInt(q) : "0"));
             tt.appendChild(el("span", null, textoCx(c, q).t || ""));
@@ -5389,17 +5818,7 @@
             hr.appendChild(el("th", COLS_NUM[c[0]] ? "num" : "", c[1]));
           });
           if (cat.lojas.length) {
-            cat.lojas.forEach(function (l, i) {
-              var th = el("th", "loja"),
-                sp = el("span");
-              th.style.background = corLoja(i);
-              sp.appendChild(
-                marcaEl(logoLoja(l), l.nome, 20, "rgba(255,255,255,.25)")
-              );
-              sp.appendChild(document.createTextNode(l.nome.toUpperCase()));
-              th.appendChild(sp);
-              hr.appendChild(th);
-            });
+            hr.appendChild(thQtdLoja());
             hr.appendChild(el("th", "qtd num", "VOLUME TOTAL"));
           } else hr.appendChild(el("th", "qtd num", cat.rotuloQtd));
           th.appendChild(hr);
@@ -5416,7 +5835,7 @@
                   ? "Nenhum item com esses filtros."
                   : "O catálogo ainda não foi importado."
               );
-            td0.colSpan = cat.cols.length + 1 + cat.lojas.length;
+            td0.colSpan = cat.cols.length + (cat.lojas.length ? 2 : 1);
             tr0.appendChild(td0);
             body.appendChild(tr0);
           }
@@ -5453,7 +5872,7 @@
                   ")"
               );
             tr.id = "cat-mais";
-            td.colSpan = cat.cols.length + 1 + cat.lojas.length;
+            td.colSpan = cat.cols.length + (cat.lojas.length ? 2 : 1);
             tr.appendChild(td);
             body.appendChild(tr);
             if (cat.obsMais) cat.obsMais.observe(tr);
@@ -5472,14 +5891,17 @@
           if (n > 0) cat.qtd[k] = n;
           else delete cat.qtd[k];
           var tr = inp.closest("tr"),
-            sp = inp.nextSibling,
+            tdq = inp.closest("td"),
+            sp = tdq.querySelector(".cx"),
             x = textoCx(c, n),
             tot = qtdTotal(c.id);
+          var dv = tdq.querySelector(".dist");
+          if (dv) dv.replaceWith(distEl(c));
           sp.textContent = x.t;
           sp.className = "cx" + (x.fora ? " fora" : "");
           inp.classList.toggle("invalid", x.fora);
-          inp.parentNode.classList.toggle("q-ok", n > 0 && !x.fora);
-          inp.parentNode.classList.toggle("q-bad", n > 0 && !!x.fora);
+          tdq.classList.toggle("q-ok", n > 0 && !x.fora);
+          tdq.classList.toggle("q-bad", n > 0 && !!x.fora);
           tr.className = tot > 0 ? "tem" : "";
           var tl = tr.querySelector("td.tot-l");
           if (tl) {
@@ -5500,6 +5922,11 @@
           if (e.target.dataset && e.target.dataset.id) renderChips();
         });
         $("cat-tab").addEventListener("click", function (e) {
+          var bd = e.target.closest && e.target.closest("button[data-dividir]");
+          if (bd) {
+            abrirDividir(cat.porId[bd.dataset.dividir]);
+            return;
+          }
           var im = e.target.closest && e.target.closest("img[data-cat]");
           if (im) abrirZoom(cat.porId[im.dataset.cat]);
         });

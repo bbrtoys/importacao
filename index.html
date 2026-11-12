@@ -41,7 +41,7 @@ header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-
 .marca .rosto{height:58px;width:auto}
 .who{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13px;color:#fff}
 .who b{font-weight:600}
-.who .logo{height:46px;width:auto}
+.marca .logo{height:46px;width:auto;margin-right:6px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .conta{position:relative}
 .avatar-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.35);border-radius:99px;padding:4px 10px 4px 4px;color:#fff;cursor:pointer}
@@ -238,7 +238,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
   .block{padding:16px}
   .login{grid-template-columns:1fr;gap:10px;margin-top:2vh}
   .login .mascote{max-width:150px;justify-self:center}
-  .marca .rosto{height:44px}.who .logo{height:36px}
+  .marca .rosto{height:44px}.marca .logo{height:34px}
 }
 @media (prefers-reduced-motion:no-preference){.btn,.x,nav.tabs a{transition:background .12s,color .12s,border-color .12s}}
 </style>
@@ -281,9 +281,8 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
 <!-- ================= SISTEMA ================= -->
 <div id="app" hidden style="display:flex;flex-direction:column;gap:16px">
   <header class="top">
-    <div class="marca"><img class="rosto" src="assets/mascote-rosto.png" alt=""><h1>Pedido de <b>Importação</b></h1></div>
+    <div class="marca"><img class="rosto" src="assets/mascote-rosto.png" alt=""><img class="logo" src="assets/logo.png" alt="BBR Toys"><h1>Pedido de <b>Importação</b></h1></div>
     <div class="who">
-      <img class="logo" src="assets/logo.png" alt="BBR Toys">
       <div class="conta">
         <button type="button" class="avatar-btn" id="b-conta" aria-haspopup="menu" aria-expanded="false" aria-controls="m-conta">
           <span class="avatar" id="u-ini" aria-hidden="true"></span>

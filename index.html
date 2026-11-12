@@ -295,6 +295,15 @@ table.cat tr.tem td.qtd{background:#e8f0fb}
 table.cat td.qtd input{width:96px;padding:4px 8px;text-align:right;font-family:var(--mono);font-size:13px}
 table.cat td.qtd .cx{display:block;font-size:10.5px;line-height:1.2;color:var(--muted);margin-top:2px;text-align:right;white-space:nowrap}
 table.cat .cx:empty{display:none}
+table.cat td{border-right:1px solid var(--rule)}
+table.cat th{border-right:1px solid rgba(255,255,255,.22)}
+table.cat td:last-child,table.cat th:last-child{border-right:0}
+table.cat tbody tr td.q-ok{background:#d3e4f9}
+table.cat tbody tr td.q-ok input{border-color:var(--azul);color:var(--azul-escuro);font-weight:700;background:#fff}
+table.cat tbody tr td.q-ok .cx{color:var(--azul-escuro);font-weight:600}
+table.cat tbody tr td.q-bad{background:#f9d5d1}
+table.cat tbody tr td.q-bad input{border-color:var(--vermelho);color:var(--vermelho-escuro);font-weight:700;background:#fff}
+table.cat tbody tr td.tot-l.q-ok b{color:var(--azul-escuro)}
 table.cat{width:100%;min-width:720px}
 table.cat th{white-space:normal;line-height:1.2;padding:7px 5px;vertical-align:middle}
 table.cat td{padding-left:5px;padding-right:5px}
@@ -1387,11 +1396,12 @@ function linhaCat(c){
     inp.value=qq?String(qq):"";inp.dataset.id=c.id;if(loja)inp.dataset.loja=loja.id;
     inp.setAttribute("aria-label","Quantidade de "+refItem(c)+(loja?" para "+loja.nome:""));
     var cx=textoCx(c,qq);if(cx.fora)inp.classList.add("invalid");
+    if(qq>0)td.classList.add(cx.fora?"q-bad":"q-ok");
     td.appendChild(inp);td.appendChild(el("span","cx"+(cx.fora?" fora":""),cx.t));
   }
   if(cat.lojas.length){
     cat.lojas.forEach(function(l,i){var td=el("td","ql");td.style.background=corLoja(i)+"14";campo(td,l);tr.appendChild(td)});
-    var tt=el("td","qtd tot-l");tt.appendChild(el("b",null,q?fmtInt(q):"0"));tt.appendChild(el("span",null,textoCx(c,q).t||""));tr.appendChild(tt);
+    var tt=el("td","qtd tot-l"+(q>0?" q-ok":""));tt.appendChild(el("b",null,q?fmtInt(q):"0"));tt.appendChild(el("span",null,textoCx(c,q).t||""));tr.appendChild(tt);
   }else{var tq=el("td","qtd");campo(tq,null);tr.appendChild(tq)}
   return tr;
 }
@@ -1435,8 +1445,9 @@ $("cat-tab").addEventListener("input",function(e){
   var n=parseQtd(v),k=chaveQ(c.id,inp.dataset.loja);if(n>0)cat.qtd[k]=n;else delete cat.qtd[k];
   var tr=inp.closest("tr"),sp=inp.nextSibling,x=textoCx(c,n),tot=qtdTotal(c.id);
   sp.textContent=x.t;sp.className="cx"+(x.fora?" fora":"");inp.classList.toggle("invalid",x.fora);
+  inp.parentNode.classList.toggle("q-ok",n>0&&!x.fora);inp.parentNode.classList.toggle("q-bad",n>0&&!!x.fora);
   tr.className=tot>0?"tem":"";
-  var tl=tr.querySelector("td.tot-l");if(tl){tl.firstChild.textContent=tot?fmtInt(tot):"0";tl.lastChild.textContent=textoCx(c,tot).t||""}
+  var tl=tr.querySelector("td.tot-l");if(tl){tl.classList.toggle("q-ok",tot>0);tl.firstChild.textContent=tot?fmtInt(tot):"0";tl.lastChild.textContent=textoCx(c,tot).t||""}
   var vr=tr.querySelector("td.volrs");if(vr){var vv=valorLinha(c,tot);vr.textContent=vv||"-";vr.className="n volrs"+(vv?"":" vazio")}
   totais();agendarRascunho();
 });

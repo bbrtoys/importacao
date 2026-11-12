@@ -269,7 +269,20 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 .thumb.sem{cursor:default}
 .resumo{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:13px;color:var(--muted)}
 .resumo b{font-family:var(--mono);font-weight:500;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
-.resumo-fixo{position:sticky;bottom:0;z-index:4;background:#fff;border-top:1px solid var(--rule);padding:12px 22px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;box-shadow:0 -6px 16px rgba(0,0,0,.08)}
+.resumo-fixo{position:sticky;bottom:0;z-index:4;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-top:1px solid var(--rule);padding:12px 22px;display:flex;gap:12px;align-items:stretch;box-shadow:0 -8px 22px rgba(10,30,60,.10)}
+.big-cards{flex:1;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr);gap:10px;min-width:0}
+.big{background:#f3f6fa;border:1px solid var(--rule);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.big small{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.big b{font-family:var(--mono);font-size:clamp(19px,1.9vw,27px);font-weight:600;line-height:1.15;color:var(--azul-escuro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:transform .18s ease}
+.big b span{font-family:inherit;font-size:.55em;font-weight:500;color:var(--muted);margin-left:3px}
+.big.valor{background:var(--azul-escuro);border-color:var(--azul-escuro)}
+.big.valor small{color:rgba(255,255,255,.75)}
+.big.valor b{color:#fff}
+.big.valor b span{color:rgba(255,255,255,.75);margin:0 3px 0 0}
+.big b.bump{transform:scale(1.06)}
+.resumo-fixo #ir-enviar{align-self:center;white-space:nowrap}
+@media (max-width:900px){.big-cards{display:flex;overflow-x:auto;scrollbar-width:none}.big-cards::-webkit-scrollbar{display:none}.big{flex:0 0 auto;min-width:120px}.big b{overflow:visible}.big.valor{order:-1}.resumo-fixo{padding:10px 12px;flex-wrap:wrap}.resumo-fixo #ir-enviar{width:100%;justify-content:center}}
+@media (prefers-reduced-motion:reduce){.big b{transition:none}}
 #zoom{position:fixed;inset:0;z-index:60;background:rgba(9,20,32,.75);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 #zoom[hidden]{display:none}
 #zoom figure{margin:0;background:#fff;border-radius:16px;padding:14px;max-width:min(520px,92vw);display:flex;flex-direction:column;gap:8px}
@@ -514,12 +527,12 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
       </div>
       <div class="resumo-lojas" id="t-lojas" hidden></div>
       <div class="resumo-fixo">
-        <div class="resumo">
-          <span><b id="t-itens">0</b> itens</span>
-          <span><b id="t-unid">0</b> unidades</span>
-          <span><b id="t-cx">0</b> caixas master</span>
-          <span>R$ <b id="t-valor">0,00</b> estimado</span>
-          <span><b id="t-cbm">0,00</b> m³</span>
+        <div class="big-cards" aria-live="polite">
+          <div class="big"><small id="t-itens-r">Itens</small><b id="t-itens">0</b></div>
+          <div class="big"><small>Unidades</small><b id="t-unid">0</b></div>
+          <div class="big"><small id="t-cx-r">Caixas master</small><b id="t-cx">0</b></div>
+          <div class="big valor"><small>Valor estimado</small><b><span>R$</span><i id="t-valor" style="font-style:normal">0,00</i></b></div>
+          <div class="big"><small>Volume</small><b><i id="t-cbm" style="font-style:normal">0,00</i><span>m³</span></b></div>
         </div>
         <a class="btn small" href="#fim-pedido" id="ir-enviar">Revisar e enviar</a>
       </div>
@@ -966,19 +979,25 @@ function itensValidos(){
   return st.itens.map(function(i){return {ref:i.ref.trim(),produto:i.produto.trim(),qtd:parseQtd(i.qtd)}})
     .filter(function(i){return (i.ref||i.produto)&&i.qtd>0});
 }
+function bigSet(id,txt){
+  var n=$(id);if(n.textContent===txt)return;n.textContent=txt;
+  var b=n.closest("b")||n;b.classList.remove("bump");void b.offsetWidth;b.classList.add("bump");
+  clearTimeout(b._t);b._t=setTimeout(function(){b.classList.remove("bump")},180);
+}
 function totais(){
   var v=itensValidos().concat(itensCatalogo());
-  $("t-itens").textContent=fmtInt(v.length);
-  $("t-unid").textContent=fmtInt(v.reduce(function(s,i){return s+i.qtd},0));
+  var dist={},nItens=0;v.forEach(function(i){var k=i.catalogo_id?"c"+i.catalogo_id:"f"+(i.ref||"")+"|"+(i.produto||"");if(!dist[k]){dist[k]=1;nItens++}});
+  bigSet("t-itens",fmtInt(nItens));$("t-itens-r").textContent=nItens===1?"Item":"Itens";
+  bigSet("t-unid",fmtInt(v.reduce(function(s,i){return s+i.qtd},0)));
   var cx=0,valor=0,cbm=0;
   itensCatalogo().forEach(function(i){
     var c=cat.porId[i.catalogo_id];if(!c)return;
     if(c.cx_master>0){var n=i.qtd/c.cx_master;cx+=n;cbm+=n*(numero(c.cbm)||0)}
     if(c.preco)valor+=i.qtd*Number(c.preco);
   });
-  $("t-cx").textContent=cx%1?cx.toLocaleString("pt-BR",{maximumFractionDigits:1}):fmtInt(cx);
-  $("t-valor").textContent=valor.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
-  $("t-cbm").textContent=cbm.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  bigSet("t-cx",cx%1?cx.toLocaleString("pt-BR",{maximumFractionDigits:1}):fmtInt(cx));$("t-cx-r").textContent=cx>0&&cx<=1?"Caixa master":"Caixas master";
+  bigSet("t-valor",valor.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}));
+  bigSet("t-cbm",cbm.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}));
   var box=$("t-lojas");box.hidden=!cat.lojas.length;box.textContent="";
   if(cat.lojas.length){
     var por={};itensCatalogo().forEach(function(i){if(!i.loja_id)return;var c=cat.porId[i.catalogo_id],o=por[i.loja_id]||(por[i.loja_id]={u:0,r:0});o.u+=i.qtd;if(c&&c.preco)o.r+=i.qtd*Number(c.preco)});

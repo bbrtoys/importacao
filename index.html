@@ -363,7 +363,8 @@ table.ped tr.pr{cursor:pointer}
 table.ped tr.pr td{padding-top:9px;padding-bottom:9px}
 table.ped tr.pr:hover td{background:var(--azul-soft)}
 table.ped tr.pr.aberto td{background:#e3eefb;border-bottom-color:transparent}
-table.ped td.seta{width:44px}
+table.ped td.pn{text-align:left;padding-left:10px}
+table.ped .pn-in{display:inline-flex;align-items:center;gap:10px}
 table.ped .bseta{width:30px;height:30px;border-radius:50%;border:1px solid var(--rule);background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--azul-escuro);padding:0}
 table.ped .bseta svg{width:16px;height:16px;transition:transform .18s ease}
 table.ped tr.aberto .bseta{background:var(--azul-escuro);border-color:var(--azul-escuro);color:#fff}
@@ -1911,7 +1912,7 @@ function renderPainel(){
   renderPCats(filtrados(true));
   var tb=$("p-tab");tb.textContent="";
   $("p-baixar").disabled=!lista.length;
-  var mostraCli=interno(),cols=[["",""],["Pedido",""]];
+  var mostraCli=interno(),cols=[["Pedido",""]];
   if(mostraCli)cols.push(["Cliente",""]);
   cols=cols.concat([["Data",""],["Etapa",""],["Itens","num"],["Unidades","num"],["Cx master","num"],["Valor estimado","num"]]);
   var th=el("thead"),hr=el("tr");cols.forEach(function(c){hr.appendChild(el("th",c[1],c[0]))});th.appendChild(hr);tb.appendChild(th);
@@ -1920,10 +1921,9 @@ function renderPainel(){
   lista.forEach(function(p){
     var itens=itensVis(p),r=resumoItens(itens),aberto=!!abertos[p.id];
     var tr=el("tr","pr"+(aberto?" aberto":""));
-    var ts=el("td","seta"),bs=el("button","bseta");bs.type="button";bs.setAttribute("aria-expanded",String(aberto));bs.setAttribute("aria-label",(aberto?"Recolher":"Expandir")+" pedido "+p.numero);
+    var bs=el("button","bseta");bs.type="button";bs.setAttribute("aria-expanded",String(aberto));bs.setAttribute("aria-label",(aberto?"Recolher":"Expandir")+" pedido "+p.numero);
     bs.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
-    ts.appendChild(bs);tr.appendChild(ts);
-    tr.appendChild(el("td","pn",p.numero));
+    var tn=el("td","pn"),pi=el("span","pn-in");pi.appendChild(bs);pi.appendChild(el("span",null,p.numero));tn.appendChild(pi);tr.appendChild(tn);
     if(mostraCli){var tc=el("td","pc"),inn=el("span","in"),pc=clientePorId(p.cliente_id);inn.appendChild(marcaEl(pc&&pc.logo,p.cliente||"?",26));inn.appendChild(document.createTextNode(p.cliente||""));tc.appendChild(inn);tr.appendChild(tc)}
     var td=el("td","pd",fmtData(p.criado_em));if(p.responsavel)td.appendChild(el("small",null,p.responsavel));tr.appendChild(td);
     var te=el("td");te.appendChild(el("span","pill "+p.status,etapaNome(p.status)));tr.appendChild(te);

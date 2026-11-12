@@ -263,37 +263,6 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 #zoom img{width:100%;height:auto;border-radius:8px}
 #zoom figcaption{font-size:13px;color:var(--ink)}
 .imp-prog{width:100%;height:10px}
-/* boas-vindas (faixa de abertura do novo pedido) */
-#v-novo{display:flex;flex-direction:column;gap:16px}
-#v-novo[hidden]{display:none}
-.hero{position:relative;overflow:hidden;background:var(--azul-escuro);color:#fff;border-radius:24px;padding:36px 40px;display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.28)}
-.hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:
-  radial-gradient(circle at 92% 12%,rgba(176,16,16,.55) 0 92px,transparent 93px),
-  radial-gradient(circle at 68% 108%,rgba(42,120,214,.45) 0 125px,transparent 126px)}
-.hero>*{position:relative}
-.hero .eyebrow{display:inline-flex;gap:8px;align-items:center;font-weight:600;font-size:12.5px;letter-spacing:.09em;text-transform:uppercase;color:#FFD34D}
-.letras{display:inline-flex;gap:4px}.letras i{width:10px;height:10px;border-radius:3px;display:block}
-.hero h1{font-size:clamp(30px,4.2vw,50px);line-height:1.04;margin:12px 0 12px;font-weight:700}
-.hero h1 em{font-style:normal;color:#FFD34D}
-.hero p{margin:0 0 20px;max-width:48ch;color:rgba(255,255,255,.85);font-size:15.5px}
-.hero-nums{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 22px}
-.hero-nums b{display:block;font-size:28px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
-.hero-nums span{font-size:12px;color:rgba(255,255,255,.72)}
-.hero .botoes{display:flex;gap:10px;flex-wrap:wrap}
-.hero .btn.primary{background:#fff;border-color:#fff;color:var(--vermelho)}
-.hero .btn.primary:hover{background:#FFD34D;border-color:#FFD34D;color:var(--azul-escuro)}
-.hero .btn.claro{background:transparent;border-color:rgba(255,255,255,.45);color:#fff}
-.hero .btn.claro:hover{border-color:#fff;color:#fff}
-.colagem{position:relative;height:290px}
-.colagem button{position:absolute;border:0;padding:0;background:#fff;border-radius:20px;box-shadow:0 18px 40px rgba(0,0,0,.35);overflow:hidden;cursor:zoom-in;transition:transform .25s ease}
-.colagem button img{width:100%;height:100%;object-fit:contain;padding:10px;background:#fff}
-.colagem button:nth-child(1){width:190px;height:190px;left:2%;top:46px;transform:rotate(-6deg)}
-.colagem button:nth-child(2){width:220px;height:220px;left:31%;top:6px;z-index:2;transform:rotate(2deg)}
-.colagem button:nth-child(3){width:175px;height:175px;right:0;top:100px;transform:rotate(7deg)}
-.colagem button:hover{transform:rotate(0) scale(1.04);z-index:3}
-.colagem .rot{position:absolute;left:10px;bottom:10px;background:rgba(9,64,109,.9);color:#fff;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;font-family:var(--mono)}
-@media (max-width:900px){.hero{grid-template-columns:1fr;padding:28px 22px}.colagem{height:240px}.colagem button:nth-child(1){width:140px;height:140px}.colagem button:nth-child(2){width:170px;height:170px}.colagem button:nth-child(3){width:130px;height:130px}}
-@media (prefers-reduced-motion:reduce){.colagem button{transition:none}}
 details.lote summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--azul-escuro)}
 details.lote .inner{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
@@ -414,19 +383,6 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
 
   <!-- ---------- NOVO PEDIDO ---------- -->
   <section id="v-novo">
-    <div class="hero" id="boas-vindas">
-      <div>
-        <span class="eyebrow"><span class="letras" aria-hidden="true"><i style="background:#B01010"></i><i style="background:#FFD34D"></i><i style="background:#2a78d6"></i><i style="background:#6FB74D"></i></span><span id="bv-eyebrow">Importação 2027 · BBR Toys</span></span>
-        <h1 id="bv-titulo">Olá!</h1>
-        <p id="bv-texto"></p>
-        <div class="hero-nums" id="bv-nums"></div>
-        <div class="botoes">
-          <a class="btn primary" href="#catalogo-inicio" id="bv-catalogo">Ver o catálogo</a>
-          <a class="btn claro" href="#pedidos" id="bv-pedidos">Meus pedidos</a>
-        </div>
-      </div>
-      <div class="colagem" id="bv-colagem" aria-label="Alguns produtos do catálogo"></div>
-    </div>
     <form class="sheet" id="form" novalidate>
       <div class="strip">
         <span>Novo pedido</span>
@@ -448,11 +404,11 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         </div>
       </div>
       <div class="block">
-        <div class="send" id="catalogo-inicio"><h2>Catálogo de importação</h2><span class="hint" id="cat-info">Carregando catálogo…</span></div>
+        <div class="send"><h2>Catálogo de importação</h2><span class="hint" id="cat-info">Carregando catálogo…</span></div>
         <div class="chips" id="cat-chips" aria-label="Filtrar por categoria"></div>
         <div class="filters">
           <label for="cat-busca">Buscar no catálogo
-            <input id="cat-busca" type="search" placeholder="Referência ou descrição…">
+            <input id="cat-busca" type="search" placeholder="Referência, descrição, showroom…">
           </label>
         </div>
         <div class="check"><input type="checkbox" id="cat-so"><label for="cat-so">Mostrar só os itens com quantidade</label></div>
@@ -810,8 +766,7 @@ function montarApp(){
   if(fs.options.length===1)ETAPAS.forEach(function(e){var o=el("option",null,e[1]);o.value=e[0];fs.appendChild(o)});
   carregarRascunhoCat();
   novoFormulario(true);
-  bvDestaques=null;bvPedidos=null;renderBoasVindas();
-  carregarCatalogo();contarPedidos();
+  carregarCatalogo();
 }
 
 /* ---------- trocar senha ---------- */
@@ -1023,7 +978,7 @@ async function carregarCatalogo(){
   }
   cat.itens=todos;cat.porId={};todos.forEach(function(c){cat.porId[c.id]=c});
   Object.keys(cat.qtd).forEach(function(k){if(!cat.porId[k])delete cat.qtd[k]});
-  renderCatalogo();renderBoasVindas();
+  renderCatalogo();
 }
 function textoCel(c,k){
   var v=c[k];
@@ -1332,48 +1287,6 @@ async function importarPlanilha(arquivo,prog){
   await Promise.all([trabalhador(),trabalhador(),trabalhador(),trabalhador(),trabalhador()]);
   return {linhas:dados.length,fotos:fila.length-falhas,falhas:falhas,inativos:(ina.data||[]).length,colunas:visiveis.map(function(c){return c[1]})};
 }
-
-
-/* ---------- boas-vindas ---------- */
-var bvPedidos=null,bvDestaques=null;
-function primeiroNome(n){var p=String(n||"").trim().split(/\s+/);return p.length?p.slice(0,2).join(" "):""}
-async function contarPedidos(){
-  var r=await sb.from("pedidos").select("id",{count:"exact",head:true});
-  bvPedidos=r.error?null:(r.count||0);renderBoasVindas();
-}
-function renderBoasVindas(){
-  if(!perfil)return;
-  var nome=perfil.nome||String(perfil.email||"").replace(/@.*/,""),cli=perfil.papel==="cliente";
-  var t=$("bv-titulo");t.textContent="";t.appendChild(document.createTextNode("Olá, "));
-  var em=el("em",null,nome||"bem-vindo");t.appendChild(em);t.appendChild(document.createTextNode("!"));
-  var cats={};cat.itens.forEach(function(c){cats[c.categoria||"SEM CATEGORIA"]=1});
-  var nCat=Object.keys(cats).length;
-  $("bv-eyebrow").textContent=(cli?nomeCliente(perfil.cliente_id)+" · ":"")+"Importação 2027 · BBR Toys";
-  $("bv-texto").textContent=cli
-    ?"O catálogo de importação 2027 está aberto para você. Navegue pelas categorias, informe o volume de cada item em caixa master inteira ou meia caixa e envie seu pedido direto por aqui."
-    :"Este é o catálogo que os clientes de importação estão vendo agora. Acompanhe os pedidos que chegam no painel e a cobertura dos mínimos no dashboard de itens.";
-  var nums=$("bv-nums");nums.textContent="";
-  [[cat.itens.length,"itens no catálogo"],[nCat,"categorias"],[bvPedidos,cli?"pedidos enviados":"pedidos recebidos"]].forEach(function(x){
-    if(x[0]==null)return;var d=el("div");d.appendChild(el("b",null,fmtInt(x[0])));d.appendChild(el("span",null,x[1]));nums.appendChild(d);
-  });
-  var bp=$("bv-pedidos");bp.textContent=cli?"Meus pedidos":"Painel de pedidos";bp.href="#pedidos";
-  $("bv-catalogo").hidden=!cat.itens.length;
-  if(!bvDestaques&&cat.itens.length){
-    var comFoto=cat.itens.filter(function(c){return c.imagem}),esc=[];
-    for(var i=0;i<3&&comFoto.length;i++)esc.push(comFoto.splice(Math.floor(Math.random()*comFoto.length),1)[0]);
-    bvDestaques=esc;
-    var col=$("bv-colagem");col.textContent="";
-    esc.forEach(function(c){
-      var b=el("button");b.type="button";b.setAttribute("aria-label","Ampliar "+refItem(c)+" "+(c.descricao||""));
-      var im=el("img");im.alt="";im.dataset.cat=c.id;if(cat.urls[c.id])im.src=cat.urls[c.id];b.appendChild(im);
-      b.appendChild(el("span","rot",refItem(c)));
-      b.addEventListener("click",function(){abrirZoom(c)});
-      col.appendChild(b);pedirImagem(String(c.id));
-    });
-  }
-  $("bv-colagem").hidden=!(bvDestaques&&bvDestaques.length);
-}
-$("bv-catalogo").addEventListener("click",function(e){e.preventDefault();$("catalogo-inicio").scrollIntoView({behavior:"smooth",block:"start"})});
 
 /* ---------- recibo, cópia e CSV ---------- */
 function textoPedido(p){

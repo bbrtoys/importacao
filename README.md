@@ -1,4 +1,4 @@
-# Pedido de Importação — BBR Toys
+# BBR Importação — BBR Toys
 
 Sistema web para os clientes de importação montarem pedidos a partir do catálogo, e para a equipe da BBR Toys acompanhar os pedidos e os mínimos de importação por item.
 

@@ -338,3 +338,7 @@ grant select, insert, update on public.config to authenticated;
 
 -- criar_pedido passou a recusar itens do catálogo fora de caixa inteira ou meia caixa:
 --   ((qtd * 2) % cx_master) <> 0  ->  erro "Quantidade fora da caixa master ..."
+
+-- criar_pedido: só usuários com perfil Cliente criam pedidos; o cliente vem do próprio login
+--   if v_papel <> 'cliente' then raise exception 'Os pedidos são enviados pelos usuários dos clientes.'; end if;
+--   v_cliente := public.meu_cliente();

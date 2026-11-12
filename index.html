@@ -388,7 +388,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         <span>Novo pedido</span>
         <span>Data <b id="f-data"></b></span>
       </div>
-      <div class="block">
+      <div class="block" id="bloco-cliente" hidden>
         <h2>Cliente</h2>
         <div class="grid2">
           <label for="cliente" id="cliente-box"><span class="lbl">Cliente de importação <span class="req">*</span></span>
@@ -442,6 +442,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         <label for="obs">Observações
           <textarea id="obs" maxlength="1000" placeholder="Prazo desejado, embalagem, instruções de embarque…"></textarea>
         </label>
+        <div class="msg info" id="so-cliente" hidden>Os pedidos são enviados pelos usuários dos clientes: o cliente e o responsável vêm do login de quem envia. Com o seu perfil, o catálogo fica só para consulta.</div>
         <div class="msg bad" id="erro" role="alert" hidden></div>
         <div class="send">
           <button type="button" class="btn small danger" id="limpar">Limpar tudo</button>
@@ -756,6 +757,8 @@ function montarApp(){
   $("p-titulo").textContent=interno()?"Painel de pedidos":"Pedidos da "+nomeCliente(perfil.cliente_id);
   $("cliente-box").hidden=!interno();$("cliente-fixo-box").hidden=interno();
   $("cliente-fixo").textContent=nomeCliente(perfil.cliente_id);
+  var podeEnviar=perfil.papel==="cliente";
+  $("so-cliente").hidden=podeEnviar;$("enviar").hidden=!podeEnviar;$("ir-enviar").hidden=!podeEnviar;
   $("fil-cliente-box").hidden=!interno();
   opcoesClientes($("cliente"),"Selecione o cliente…",true);
   opcoesClientes($("fil-cliente"),"Todos os clientes",false);
@@ -903,7 +906,7 @@ $("limpar").addEventListener("click",function(){
 function validar(){
   var erros=[];
   document.querySelectorAll("#form .invalid").forEach(function(n){n.classList.remove("invalid")});
-  if(interno()&&!st.cliente){erros.push("Selecione o cliente.");$("cliente").classList.add("invalid")}
+  if(perfil.papel!=="cliente")erros.push("Os pedidos são enviados pelos usuários dos clientes.");
   var inc=0;
   st.itens.forEach(function(it,i){
     var tem=it.ref.trim()||it.produto.trim(),q=parseQtd(it.qtd);
@@ -925,8 +928,8 @@ $("form").addEventListener("submit",async function(e){
   er.hidden=true;
   var itens=itensCatalogo().concat(itensValidos()),btn=$("enviar");
   btn.disabled=true;btn.textContent="Enviando…";
-  var cid=interno()?st.cliente:perfil.cliente_id;
-  var r=await sb.rpc("criar_pedido",{p_cliente:cid,p_responsavel:st.responsavel.trim(),p_obs:st.obs.trim(),p_itens:itens});
+  var cid=perfil.cliente_id;st.responsavel=perfil.nome||perfil.email||"";
+  var r=await sb.rpc("criar_pedido",{p_cliente:cid,p_responsavel:st.responsavel,p_obs:st.obs.trim(),p_itens:itens});
   btn.disabled=false;btn.textContent="Enviar pedido";
   if(r.error){msg(er,"bad","O pedido não foi enviado: "+traduz(r.error));return}
   ultimo={numero:r.data.numero,cliente:nomeCliente(cid),responsavel:st.responsavel.trim(),obs:st.obs.trim(),itens:itens,criado_em:new Date().toISOString(),status:"recebido"};

@@ -442,7 +442,6 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         <label for="obs">Observações
           <textarea id="obs" maxlength="1000" placeholder="Prazo desejado, embalagem, instruções de embarque…"></textarea>
         </label>
-        <div class="msg info" id="so-cliente" hidden>Os pedidos são enviados pelos usuários dos clientes: o cliente e o responsável vêm do login de quem envia. Com o seu perfil, o catálogo fica só para consulta.</div>
         <div class="msg bad" id="erro" role="alert" hidden></div>
         <div class="send">
           <button type="button" class="btn small danger" id="limpar">Limpar tudo</button>
@@ -758,7 +757,7 @@ function montarApp(){
   $("cliente-box").hidden=!interno();$("cliente-fixo-box").hidden=interno();
   $("cliente-fixo").textContent=nomeCliente(perfil.cliente_id);
   var podeEnviar=perfil.papel==="cliente";
-  $("so-cliente").hidden=podeEnviar;$("enviar").hidden=!podeEnviar;$("ir-enviar").hidden=!podeEnviar;
+  $("enviar").hidden=!podeEnviar;$("ir-enviar").hidden=!podeEnviar;
   $("fil-cliente-box").hidden=!interno();
   opcoesClientes($("cliente"),"Selecione o cliente…",true);
   opcoesClientes($("fil-cliente"),"Todos os clientes",false);

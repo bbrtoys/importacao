@@ -41,9 +41,29 @@ header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-
 .marca .rosto{height:58px;width:auto}
 .who{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13px;color:#fff}
 .who b{font-weight:600}
-.who .logo{height:46px;width:auto;margin-left:6px}
-.who .btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5);color:#fff}
-.who .btn:hover{background:#fff;color:var(--vermelho);border-color:#fff}
+.who .logo{height:46px;width:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.conta{position:relative}
+.avatar-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.35);border-radius:99px;padding:4px 10px 4px 4px;color:#fff;cursor:pointer}
+.avatar-btn:hover,.avatar-btn[aria-expanded="true"]{background:rgba(0,0,0,.3);border-color:#fff}
+.avatar-btn .seta{transition:transform .15s}
+.avatar-btn[aria-expanded="true"] .seta{transform:rotate(180deg)}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--azul-escuro);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;letter-spacing:.02em;border:2px solid rgba(255,255,255,.85)}
+.avatar.grande{width:46px;height:46px;font-size:16px;border-color:var(--azul-soft);flex:none}
+.menu-conta{position:absolute;right:0;top:calc(100% + 10px);z-index:40;width:270px;background:#fff;color:var(--ink);border-radius:16px;box-shadow:0 14px 34px rgba(0,0,0,.28);padding:8px;display:flex;flex-direction:column}
+.menu-conta[hidden]{display:none}
+.mc-topo{display:flex;align-items:center;gap:12px;padding:10px 10px 12px;border-bottom:1px solid var(--rule);margin-bottom:6px}
+.mc-id{display:flex;flex-direction:column;min-width:0;font-size:12.5px;color:var(--muted)}
+.mc-id b{font-size:14px;color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-id span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-papel{margin-top:4px;align-self:flex-start;background:var(--vermelho);color:#fff;border-radius:99px;padding:1px 9px;font-size:11px;font-weight:600}
+.mc-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:10px;border:0;background:none;color:var(--ink);font-size:13.5px;font-weight:500;text-decoration:none;cursor:pointer;text-align:left}
+.mc-item svg{color:var(--azul-escuro);flex:none}
+.mc-item:hover,.mc-item:focus-visible{background:var(--azul-soft);outline:none}
+.mc-item.sair{color:var(--vermelho)}
+.mc-item.sair svg{color:var(--vermelho)}
+.mc-item.sair:hover,.mc-item.sair:focus-visible{background:var(--vermelho-soft)}
+.mc-sep{height:1px;background:var(--rule);margin:6px 4px}
 
 nav.tabs{display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start}
 nav.tabs a{padding:8px 18px;border-radius:99px;color:#fff;text-decoration:none;font-weight:500;font-size:13.5px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.08)}
@@ -263,10 +283,33 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
   <header class="top">
     <div class="marca"><img class="rosto" src="assets/mascote-rosto.png" alt=""><h1>Pedido de <b>Importação</b></h1></div>
     <div class="who">
-      <span><b id="u-nome"></b> · <span id="u-papel"></span></span>
-      <button type="button" class="btn small" id="b-senha">Trocar senha</button>
-      <button type="button" class="btn small" data-sair>Sair</button>
       <img class="logo" src="assets/logo.png" alt="BBR Toys">
+      <div class="conta">
+        <button type="button" class="avatar-btn" id="b-conta" aria-haspopup="menu" aria-expanded="false" aria-controls="m-conta">
+          <span class="avatar" id="u-ini" aria-hidden="true"></span>
+          <svg class="seta" width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="sr" id="u-conta-rot">Abrir menu da conta</span>
+        </button>
+        <div class="menu-conta" id="m-conta" role="menu" hidden>
+          <div class="mc-topo">
+            <span class="avatar grande" id="u-ini2" aria-hidden="true"></span>
+            <div class="mc-id"><b id="u-nome"></b><span id="u-email"></span><span class="mc-papel" id="u-papel"></span></div>
+          </div>
+          <button type="button" role="menuitem" class="mc-item" id="b-senha">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            Trocar senha</button>
+          <a role="menuitem" class="mc-item" href="#pedidos" id="mc-pedidos">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h10M3 8h10M3 12.5h6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span id="mc-pedidos-txt">Meus pedidos</span></a>
+          <a role="menuitem" class="mc-item" href="#usuarios" id="mc-usuarios" hidden>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6" cy="5.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c.6-2.4 2.3-3.5 4.5-3.5s3.9 1.1 4.5 3.5M11 3.5a2.3 2.3 0 0 1 0 4.4M12.5 10.3c1 .5 1.7 1.6 2 3.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Usuários e clientes</a>
+          <div class="mc-sep" role="separator"></div>
+          <button type="button" role="menuitem" class="mc-item sair" data-sair>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2.5H3.5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1H6M10.5 11 13.5 8l-3-3M13.5 8H6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Sair</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -624,8 +667,7 @@ function opcoesClientes(sel,primeira,soAtivos){
   sel.value=atual;
 }
 function montarApp(){
-  $("u-nome").textContent=perfil.nome||perfil.email||"";
-  $("u-papel").textContent=perfil.papel==="cliente"?nomeCliente(perfil.cliente_id):PAPEIS[perfil.papel];
+  atualizarConta();
   $("t-usuarios").hidden=!admin();
   $("t-dashboard").hidden=!interno();
   opcoesClientes($("d-cliente"),"Todos os clientes",false);
@@ -646,7 +688,40 @@ function montarApp(){
 }
 
 /* ---------- trocar senha ---------- */
-$("b-senha").addEventListener("click",function(){$("f-senha").hidden=!$("f-senha").hidden;$("s-msg").hidden=true});
+function iniciais(s){
+  var p=String(s||"").replace(/@.*/,"").split(/[\s._-]+/).filter(Boolean);
+  if(!p.length)return "?";
+  return (p[0][0]+(p.length>1?p[p.length-1][0]:(p[0][1]||""))).toUpperCase();
+}
+function atualizarConta(){
+  var nome=perfil.nome||perfil.email||"",ini=iniciais(perfil.nome||perfil.email);
+  $("u-nome").textContent=nome;$("u-email").textContent=perfil.email||"";
+  $("u-papel").textContent=perfil.papel==="cliente"?nomeCliente(perfil.cliente_id):PAPEIS[perfil.papel];
+  $("u-ini").textContent=ini;$("u-ini2").textContent=ini;
+  $("u-conta-rot").textContent="Menu da conta de "+nome;
+  $("mc-usuarios").hidden=!admin();
+  $("mc-pedidos-txt").textContent=interno()?"Painel de pedidos":"Meus pedidos";
+}
+var menuConta=$("m-conta"),btnConta=$("b-conta");
+function itensMenu(){return Array.prototype.filter.call(menuConta.querySelectorAll(".mc-item"),function(n){return !n.hidden})}
+function abrirMenu(foco){menuConta.hidden=false;btnConta.setAttribute("aria-expanded","true");if(foco){var it=itensMenu();if(it[0])it[0].focus()}}
+function fecharMenu(volta){if(menuConta.hidden)return;menuConta.hidden=true;btnConta.setAttribute("aria-expanded","false");if(volta)btnConta.focus()}
+btnConta.addEventListener("click",function(e){e.stopPropagation();menuConta.hidden?abrirMenu(e.detail===0):fecharMenu(false)});
+btnConta.addEventListener("keydown",function(e){if(e.key==="ArrowDown"){e.preventDefault();abrirMenu(true)}});
+menuConta.addEventListener("keydown",function(e){
+  var it=itensMenu(),i=it.indexOf(document.activeElement);
+  if(e.key==="Escape"){e.preventDefault();fecharMenu(true)}
+  else if(e.key==="ArrowDown"){e.preventDefault();it[(i+1)%it.length].focus()}
+  else if(e.key==="ArrowUp"){e.preventDefault();it[(i-1+it.length)%it.length].focus()}
+  else if(e.key==="Tab"){fecharMenu(false)}
+});
+menuConta.addEventListener("click",function(e){if(e.target.closest(".mc-item"))fecharMenu(false)});
+document.addEventListener("click",function(e){if(!e.target.closest(".conta"))fecharMenu(false)});
+$("b-senha").addEventListener("click",function(){
+  $("f-senha").hidden=false;$("s-msg").hidden=true;
+  $("f-senha").scrollIntoView({block:"start",behavior:"smooth"});
+  setTimeout(function(){$("s-nova").focus()},250);
+});
 $("s-cancelar").addEventListener("click",function(){$("f-senha").hidden=true});
 $("f-senha").addEventListener("submit",async function(e){
   e.preventDefault();
@@ -976,7 +1051,7 @@ async function carregarUsuarios(){
       bSalvar.disabled=false;
       if(up.error){msg(er,"bad","Não foi possível salvar: "+traduz(up.error));return}
       bSalvar.textContent="Salvo";setTimeout(function(){bSalvar.textContent="Salvar"},1500);
-      if(eu){perfil.nome=iNome.value.trim();$("u-nome").textContent=perfil.nome||perfil.email}
+      if(eu){perfil.nome=iNome.value.trim();atualizarConta()}
     });
     [iNome,null,sPapel,sCli,cAtivo,bSalvar].forEach(function(n,k){
       var td=el("td");if(k===1){td.textContent=u.email||"";td.className="mono"}else td.appendChild(n);tr.appendChild(td);

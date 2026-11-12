@@ -316,3 +316,22 @@ begin
 
   return jsonb_build_object('id', v_id, 'numero', v_numero);
 end $$;
+
+-- =====================================================================
+-- Colunas visíveis do catálogo (definidas pela importação: células verdes)
+-- =====================================================================
+alter table public.catalogo add column if not exists moq integer;
+create table if not exists public.config (
+  chave text primary key,
+  valor jsonb not null,
+  atualizado_em timestamptz not null default now()
+);
+alter table public.config enable row level security;
+create policy config_ler on public.config for select to authenticated
+  using (coalesce(public.meu_papel() in ('admin','interno','cliente'), false));
+create policy config_incluir on public.config for insert to authenticated
+  with check (public.meu_papel() = 'admin');
+create policy config_alterar on public.config for update to authenticated
+  using (public.meu_papel() = 'admin') with check (public.meu_papel() = 'admin');
+revoke all on public.config from anon, authenticated;
+grant select, insert, update on public.config to authenticated;

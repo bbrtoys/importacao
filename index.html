@@ -327,6 +327,26 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 .lado .resumo-lojas>div{flex:0 0 auto;min-width:150px;padding:6px 10px;background:#f8fafc}
 .lado .resumo-lojas b{font-size:14px}
 @media (max-width:900px){.big-cards{display:flex;overflow-x:auto;scrollbar-width:none}.big-cards::-webkit-scrollbar{display:none}.big{flex:0 0 auto;min-width:120px}.big b{overflow:visible;font-size:20px}}
+.cats-lado{display:none}
+.cats-lado h3{margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cl-lst{display:flex;flex-direction:column;gap:3px}
+.cl-lst button{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:1px solid transparent;background:none;border-radius:10px;padding:8px 10px;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;line-height:1.25}
+.cl-lst button:hover{background:#f3f6fa;border-color:var(--rule)}
+.cl-lst button .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.cl-lst button small{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--muted)}
+.cats-lado .q{background:var(--azul-escuro);color:#fff;border-radius:99px;padding:0 6px;font-size:10.5px;line-height:17px;font-weight:600;flex:none}
+.cl-lst button[aria-pressed="true"]{background:var(--vermelho);border-color:var(--vermelho);color:#fff}
+.cl-lst button[aria-pressed="true"] small{color:rgba(255,255,255,.85)}
+.cl-lst button[aria-pressed="true"] .q{background:#fff;color:var(--vermelho)}
+.cl-dica{margin:8px 2px 0;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+@media (min-width:1280px){
+  .wrap.larga{max-width:1580px !important}
+  .novo-grid{grid-template-columns:214px minmax(0,1fr) 264px !important}
+  .cats-lado{display:block;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;background:rgba(255,255,255,.97);border-radius:18px;padding:14px 10px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
+  .fcat{display:none}
+  table.cat td,table.cat th{padding-left:6px;padding-right:6px}
+  table.cat td.w{min-width:230px}
+}
 @media (min-width:1180px){
   .wrap.larga{max-width:1360px}
   .novo-grid{display:grid;grid-template-columns:minmax(0,1fr) 264px;gap:16px;align-items:start}
@@ -542,6 +562,11 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
   <!-- ---------- NOVO PEDIDO ---------- -->
   <section id="v-novo">
     <div class="novo-grid">
+    <aside class="cats-lado" id="cats-lado" aria-label="Categorias do catálogo">
+      <h3>Categorias</h3>
+      <div class="cl-lst" id="cat-lado-lista"></div>
+      <p class="cl-dica"><span class="q">1</span> itens que já têm quantidade</p>
+    </aside>
     <form class="sheet" id="form" novalidate>
       <div class="strip">
         <span>Novo pedido</span>
@@ -1037,7 +1062,7 @@ function novoFormulario(manterCatalogo){
   while(st.itens.length<LINHAS_INICIAIS)st.itens.push(linhaVazia());
   $("f-data").textContent=new Date().toLocaleDateString("pt-BR");
   $("cliente").value="";$("responsavel").value=st.responsavel;$("obs").value="";
-  renderLinhas();$("erro").hidden=true;$("form").hidden=false;$("recibo").hidden=true;
+  renderLinhas();$("erro").hidden=true;$("form").hidden=false;$("cats-lado").hidden=false;$("recibo").hidden=true;
 }
 function renderLinhas(focar){
   var box=$("rows");box.textContent="";
@@ -1295,7 +1320,15 @@ function renderChips(){
     if(foco===k)cb.focus();
   });
   if(!vis.length)box.appendChild(el("div","vz","Nenhuma categoria com esse nome."));
-  var sel=Object.keys(cat.filtros),n=$("cat-n");n.hidden=!sel.length;n.textContent=sel.length;
+  var sel=Object.keys(cat.filtros),n=$("cat-n");
+  var ll=$("cat-lado-lista"),fl=document.activeElement&&document.activeElement.dataset?document.activeElement.dataset.ks:null;ll.textContent="";
+  [["","Todas",cat.itens.length,totQ]].concat(cats.map(function(k){return [k,k,cont[k],comQ[k]||0]})).forEach(function(x){
+    var b=el("button");b.type="button";b.dataset.ks=x[0]||"*";b.setAttribute("aria-pressed",String(x[0]?!!cat.filtros[x[0]]:!sel.length));
+    b.appendChild(el("span","nm",x[1]));
+    if(x[3]){var qq=el("span","q",fmtInt(x[3]));qq.title=fmtInt(x[3])+(x[3]===1?" item com quantidade":" itens com quantidade");b.appendChild(qq)}
+    b.appendChild(el("small",null,fmtInt(x[2])));ll.appendChild(b);
+    if(fl===b.dataset.ks)b.focus();
+  });n.hidden=!sel.length;n.textContent=sel.length;
   $("seg-n").textContent=fmtInt(totQ);
   $("seg-todos").setAttribute("aria-pressed",String(!cat.so));$("seg-so").setAttribute("aria-pressed",String(!!cat.so));
   var at=$("cat-ativos");at.textContent="";
@@ -1406,6 +1439,11 @@ $("seg-so").addEventListener("click",function(){if(!cat.so){cat.so=true;renderCa
   $("cat-menu-fechar").addEventListener("click",function(){abre(false);btn.focus()});
   $("cat-menu-limpar").addEventListener("click",function(){cat.filtros={};renderCatalogo()});
   $("cat-fcat").addEventListener("input",function(){cat.fcat=this.value;renderChips()});
+  $("cat-lado-lista").addEventListener("click",function(e){
+    var b=e.target.closest("button");if(!b)return;var k=b.dataset.ks;
+    if(k==="*")cat.filtros={};else if(cat.filtros[k])delete cat.filtros[k];else cat.filtros[k]=true;
+    renderCatalogo();$("cat-tab").parentNode.scrollTop=0;
+  });
   $("cat-chips").addEventListener("change",function(e){
     var k=e.target.dataset&&e.target.dataset.k;if(!k)return;
     if(e.target.checked)cat.filtros[k]=true;else delete cat.filtros[k];
@@ -1708,7 +1746,7 @@ function mostrarRecibo(p){
   });
   linhasItens($("r-itens"),p.itens);
   $("r-total").textContent=fmtInt(p.itens.reduce(function(s,i){return s+i.qtd},0));
-  $("form").hidden=true;$("recibo").hidden=false;window.scrollTo(0,0);
+  $("form").hidden=true;$("cats-lado").hidden=true;$("recibo").hidden=false;window.scrollTo(0,0);
 }
 $("r-copiar").addEventListener("click",function(){if(ultimo)copiar(textoPedido(ultimo),this)});
 $("r-baixar").addEventListener("click",function(){if(ultimo)baixarCsv("pedido-"+ultimo.numero+".csv",[ultimo])});

@@ -295,6 +295,22 @@ table.cat tr.tem td.qtd{background:#e8f0fb}
 table.cat td.qtd input{width:96px;padding:4px 8px;text-align:right;font-family:var(--mono);font-size:13px}
 table.cat td.qtd .cx{display:block;font-size:10.5px;line-height:1.2;color:var(--muted);margin-top:2px;text-align:right;white-space:nowrap}
 table.cat .cx:empty{display:none}
+table.cat{width:100%;min-width:720px}
+table.cat th{white-space:normal;line-height:1.2;padding:7px 5px;vertical-align:middle}
+table.cat td{padding-left:5px;padding-right:5px}
+table.cat td.w{min-width:150px;max-width:none}
+table.cat td.n{font-size:11.5px}
+table.cat td.img{width:56px}
+table.cat th.qtd,table.cat td.qtd{width:108px;min-width:108px}
+table.cat td.qtd input{width:88px}
+table.cat td.qtd .cx,table.cat td.ql .cx{white-space:normal;max-width:96px;margin-left:auto;margin-right:auto;line-height:1.15}
+table.cat th.loja{white-space:normal;width:92px}
+table.cat th.loja span{flex-direction:column;gap:3px;line-height:1.1}
+table.cat td.ql{min-width:92px;width:92px}
+table.cat td.ql input{width:76px}
+table.cat td.tot-l{width:84px;min-width:84px}
+table.cat.multi th.qtd{right:auto;width:84px;min-width:84px}
+table.cat.multi td.qtd{position:static;box-shadow:none}
 table.cat td.qtd .cx.fora{color:var(--vermelho);font-weight:600}
 table.cat tbody tr{content-visibility:auto;contain-intrinsic-size:auto 54px}
 /* tudo centralizado no catálogo */
@@ -344,8 +360,6 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
   .novo-grid{grid-template-columns:214px minmax(0,1fr) 264px !important}
   .cats-lado{display:block;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;background:rgba(255,255,255,.97);border-radius:18px;padding:14px 10px;box-shadow:0 10px 30px rgba(0,0,0,.28)}
   .fcat{display:none}
-  table.cat td,table.cat th{padding-left:6px;padding-right:6px}
-  table.cat td.w{min-width:230px}
 }
 @media (min-width:1180px){
   .wrap.larga{max-width:1360px}
@@ -415,12 +429,12 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 .loja-chip i{width:8px;align-self:stretch;border-radius:4px;display:block}
 .loja-chip b{display:block;font-size:13.5px;font-weight:600}
 .loja-chip small{display:block;font-size:11.5px;color:var(--muted)}
-table.cat th.loja{color:#fff;white-space:nowrap}
-table.cat th.loja span{display:inline-flex;align-items:center;gap:6px}
+table.cat th.loja{color:#fff;white-space:normal;width:92px}
+table.cat th.loja span{display:inline-flex;flex-direction:column;align-items:center;gap:3px;line-height:1.1}
 table.cat th.loja img{width:20px;height:20px;border-radius:5px;background:#fff;object-fit:contain}
-table.cat td.ql{min-width:104px}
-table.cat td.ql input{width:84px;padding:4px 8px;text-align:center;font-family:var(--mono);font-size:13px;display:block;margin:0 auto}
-table.cat td.ql .cx{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;white-space:nowrap}
+table.cat td.ql{min-width:92px;width:92px}
+table.cat td.ql input{width:76px;padding:4px 6px;text-align:center;font-family:var(--mono);font-size:13px;display:block;margin:0 auto}
+table.cat td.ql .cx{display:block;font-size:10.5px;color:var(--muted);margin-top:2px;white-space:normal;max-width:84px;margin-left:auto;margin-right:auto;line-height:1.15}
 table.cat td.ql .cx.fora{color:var(--vermelho);font-weight:600}
 table.cat td.tot-l b{display:block;font-family:var(--mono);font-size:15px;font-weight:600;color:var(--vermelho-escuro)}
 table.cat td.tot-l span{display:block;font-size:10.5px;color:var(--muted)}
@@ -1385,7 +1399,7 @@ function renderCatalogo(){
   if(!$("cat-tab"))return;
   renderChips();
   cat.lista=filtradosCat();cat.mostrados=0;
-  var tb=$("cat-tab");tb.textContent="";
+  var tb=$("cat-tab");tb.textContent="";tb.classList.toggle("multi",cat.lojas.length>0);
   if(cat.obs)cat.obs.disconnect();if(cat.obsMais)cat.obsMais.disconnect();
   $("cat-info").textContent=cat.itens.length?fmtInt(cat.lista.length)+" de "+fmtInt(cat.itens.length)+" itens":"Nenhum item no catálogo ainda.";
   var th=el("thead"),hr=el("tr");

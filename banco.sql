@@ -212,3 +212,107 @@ revoke all on public.produtos from anon, authenticated;
 grant select, insert, update, delete on public.produtos to authenticated;
 
 alter publication supabase_realtime add table public.pedidos, public.pedido_itens, public.produtos;
+-- =====================================================================
+-- Catálogo de importação (planilha Portal BBR Toys Importação 2027)
+-- =====================================================================
+create table public.catalogo (
+  id integer primary key,
+  ordem integer not null default 0,
+  showroom text not null default '',
+  ref_china text not null default '',
+  ref_brasil text not null default '',
+  ref_final text not null default '',
+  descricao_original text not null default '',
+  descricao text not null default '',
+  categoria text not null default '',
+  subcategoria text not null default '',
+  fob numeric,
+  preco numeric,
+  pack text not null default '',
+  cx_master integer,
+  display text not null default '',
+  info text not null default '',
+  inner_qtd integer,
+  dim_cx text not null default '',
+  dim_produto text not null default '',
+  cbm text not null default '',
+  cuft text not null default '',
+  gw text not null default '',
+  nw text not null default '',
+  imagem text not null default '',
+  ativo boolean not null default true,
+  atualizado_em timestamptz not null default now()
+);
+create index catalogo_categoria_idx on public.catalogo (categoria, ordem);
+alter table public.catalogo enable row level security;
+create policy catalogo_ler on public.catalogo for select to authenticated
+  using (coalesce(public.meu_papel() in ('admin','interno','cliente'), false));
+create policy catalogo_incluir on public.catalogo for insert to authenticated
+  with check (public.meu_papel() = 'admin');
+create policy catalogo_alterar on public.catalogo for update to authenticated
+  using (public.meu_papel() = 'admin') with check (public.meu_papel() = 'admin');
+create policy catalogo_excluir on public.catalogo for delete to authenticated
+  using (public.meu_papel() = 'admin');
+revoke all on public.catalogo from anon, authenticated;
+grant select, insert, update, delete on public.catalogo to authenticated;
+
+-- imagens do catálogo (bucket privado: só usuários logados e liberados veem)
+insert into storage.buckets (id, name, public) values ('catalogo', 'catalogo', false)
+  on conflict (id) do nothing;
+create policy catalogo_img_ler on storage.objects for select to authenticated
+  using (bucket_id = 'catalogo' and coalesce(public.meu_papel() in ('admin','interno','cliente'), false));
+create policy catalogo_img_incluir on storage.objects for insert to authenticated
+  with check (bucket_id = 'catalogo' and public.meu_papel() = 'admin');
+create policy catalogo_img_alterar on storage.objects for update to authenticated
+  using (bucket_id = 'catalogo' and public.meu_papel() = 'admin') with check (bucket_id = 'catalogo' and public.meu_papel() = 'admin');
+create policy catalogo_img_excluir on storage.objects for delete to authenticated
+  using (bucket_id = 'catalogo' and public.meu_papel() = 'admin');
+
+-- itens de pedido passam a guardar de qual linha do catálogo vieram
+alter table public.pedido_itens add column catalogo_id integer references public.catalogo(id) on delete set null;
+
+create or replace function public.criar_pedido(p_cliente uuid, p_responsavel text, p_obs text, p_itens jsonb)
+returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare
+  v_papel text := public.meu_papel();
+  v_cliente uuid;
+  v_id uuid;
+  v_numero text;
+begin
+  if v_papel is null or v_papel = 'pendente' then
+    raise exception 'Seu usuário não tem permissão para criar pedidos.';
+  end if;
+  if v_papel = 'cliente' then
+    v_cliente := public.meu_cliente();
+  else
+    v_cliente := p_cliente;
+  end if;
+  if v_cliente is null or not exists (select 1 from public.clientes where id = v_cliente and ativo) then
+    raise exception 'Cliente inválido.';
+  end if;
+  if p_itens is null or jsonb_typeof(p_itens) <> 'array' or jsonb_array_length(p_itens) = 0 then
+    raise exception 'Informe pelo menos um item.';
+  end if;
+  if jsonb_array_length(p_itens) > 1500 then
+    raise exception 'O pedido aceita no máximo 1500 itens.';
+  end if;
+
+  v_numero := 'IMP-' || to_char(now() at time zone 'America/Sao_Paulo', 'YYMMDD')
+              || '-' || lpad(nextval('public.pedido_seq')::text, 4, '0');
+
+  insert into public.pedidos (numero, cliente_id, criado_por, responsavel, obs)
+  values (v_numero, v_cliente, auth.uid(),
+          left(coalesce(p_responsavel, ''), 80), left(coalesce(p_obs, ''), 1000))
+  returning id into v_id;
+
+  insert into public.pedido_itens (pedido_id, ordem, ref, produto, qtd, catalogo_id)
+  select v_id, t.ord,
+         left(coalesce(t.item->>'ref', ''), 40),
+         left(coalesce(t.item->>'produto', ''), 200),
+         (t.item->>'qtd')::integer,
+         (select c.id from public.catalogo c where c.id = nullif(t.item->>'catalogo_id','')::integer)
+  from jsonb_array_elements(p_itens) with ordinality as t(item, ord);
+
+  return jsonb_build_object('id', v_id, 'numero', v_numero);
+end $$;

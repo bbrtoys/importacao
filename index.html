@@ -306,18 +306,42 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 .thumb.sem{cursor:default}
 .resumo{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:13px;color:var(--muted)}
 .resumo b{font-family:var(--mono);font-weight:500;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
-.resumo-fixo{position:sticky;bottom:0;z-index:4;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-top:1px solid var(--rule);padding:12px 22px;display:flex;gap:12px;align-items:stretch;box-shadow:0 -8px 22px rgba(10,30,60,.10)}
-.big-cards{flex:1;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr);gap:10px;min-width:0}
-.big{background:#f3f6fa;border:1px solid var(--rule);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.novo-grid{display:block}
+#form[hidden]~.lado{display:none}
+.lado{position:sticky;bottom:10px;z-index:4;margin-top:12px;background:rgba(255,255,255,.97);backdrop-filter:blur(6px);border-radius:18px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.28);display:flex;flex-direction:column;gap:8px}
+.lado h3{display:none;margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lado #enviar-lado{display:none}
+.big-cards{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:8px;min-width:0}
+.big{background:#f3f6fa;border:1px solid var(--rule);border-radius:14px;padding:9px 14px;display:flex;flex-direction:column;justify-content:center;min-width:0}
 .big small{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-.big b{font-family:var(--mono);font-size:clamp(19px,1.9vw,27px);font-weight:600;line-height:1.15;color:var(--azul-escuro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:transform .18s ease}
+.big b{font-family:var(--mono);font-size:24px;font-weight:600;line-height:1.15;color:var(--azul-escuro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:transform .18s ease;transform-origin:left center}
 .big b span{font-family:inherit;font-size:.55em;font-weight:500;color:var(--muted);margin-left:3px}
 .big.valor{background:var(--azul-escuro);border-color:var(--azul-escuro)}
 .big.valor small{color:rgba(255,255,255,.75)}
 .big.valor b{color:#fff}
 .big.valor b span{color:rgba(255,255,255,.75);margin:0 3px 0 0}
 .big b.bump{transform:scale(1.06)}
-@media (max-width:900px){.big-cards{display:flex;overflow-x:auto;scrollbar-width:none}.big-cards::-webkit-scrollbar{display:none}.big{flex:0 0 auto;min-width:120px}.big b{overflow:visible}.big.valor{order:-1}.resumo-fixo{padding:10px 12px;flex-wrap:wrap}}
+.lado .resumo-lojas{display:flex;overflow-x:auto;gap:8px;padding:0;background:none;border:0;scrollbar-width:none}
+.lado .resumo-lojas::-webkit-scrollbar{display:none}
+.lado .resumo-lojas>div{flex:0 0 auto;min-width:150px;padding:6px 10px;background:#f8fafc}
+.lado .resumo-lojas b{font-size:14px}
+@media (max-width:900px){.big-cards{display:flex;overflow-x:auto;scrollbar-width:none}.big-cards::-webkit-scrollbar{display:none}.big{flex:0 0 auto;min-width:120px}.big b{overflow:visible;font-size:20px}}
+@media (min-width:1180px){
+  .wrap.larga{max-width:1360px}
+  .novo-grid{display:grid;grid-template-columns:minmax(0,1fr) 264px;gap:16px;align-items:start}
+  .lado{top:16px;bottom:auto;margin-top:0;padding:16px;gap:12px;max-height:calc(100vh - 32px);overflow-y:auto}
+  .lado h3{display:block}
+  .big-cards{display:flex;flex-direction:column}
+  .big{padding:10px 14px}
+  .big.valor{padding:14px}
+  .big.valor b{font-size:28px}
+  .lado .resumo-lojas{flex-direction:column;overflow:visible}
+  .lado .resumo-lojas>div{min-width:0}
+  .lado #enviar-lado{display:inline-flex;justify-content:center;width:100%;padding-top:13px;padding-bottom:13px}
+  .lado #enviar-lado[hidden]{display:none}
+  #form #enviar{display:none}
+  .wrap.larga .cat-wrap{max-height:calc(100vh - 150px);min-height:420px}
+}
 @media (prefers-reduced-motion:reduce){.big b{transition:none}}
 #zoom{position:fixed;inset:0;z-index:60;background:rgba(9,20,32,.75);display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
 #zoom[hidden]{display:none}
@@ -515,6 +539,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
 
   <!-- ---------- NOVO PEDIDO ---------- -->
   <section id="v-novo">
+    <div class="novo-grid">
     <form class="sheet" id="form" novalidate>
       <div class="strip">
         <span>Novo pedido</span>
@@ -578,16 +603,6 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
           </div>
         </details>
       </div>
-      <div class="resumo-lojas" id="t-lojas" hidden></div>
-      <div class="resumo-fixo">
-        <div class="big-cards" aria-live="polite">
-          <div class="big"><small id="t-itens-r">Itens</small><b id="t-itens">0</b></div>
-          <div class="big"><small>Unidades</small><b id="t-unid">0</b></div>
-          <div class="big"><small id="t-cx-r">Caixas master</small><b id="t-cx">0</b></div>
-          <div class="big valor"><small>Valor estimado</small><b><span>R$</span><i id="t-valor" style="font-style:normal">0,00</i></b></div>
-          <div class="big"><small>Volume</small><b><i id="t-cbm" style="font-style:normal">0,00</i><span>m³</span></b></div>
-        </div>
-      </div>
       <div class="block" id="fim-pedido">
         <label for="obs">Observações
           <textarea id="obs" maxlength="1000" placeholder="Prazo desejado, embalagem, instruções de embarque…"></textarea>
@@ -599,6 +614,19 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         </div>
       </div>
     </form>
+    <aside class="lado" id="lado" aria-label="Resumo do pedido">
+      <h3>Resumo do pedido</h3>
+      <div class="big-cards" aria-live="polite">
+        <div class="big valor"><small>Valor estimado</small><b><span>R$</span><i id="t-valor" style="font-style:normal">0,00</i></b></div>
+        <div class="big"><small id="t-itens-r">Itens</small><b id="t-itens">0</b></div>
+        <div class="big"><small>Unidades</small><b id="t-unid">0</b></div>
+        <div class="big"><small id="t-cx-r">Caixas master</small><b id="t-cx">0</b></div>
+        <div class="big"><small>Volume</small><b><i id="t-cbm" style="font-style:normal">0,00</i><span>m³</span></b></div>
+      </div>
+      <div class="resumo-lojas" id="t-lojas" hidden></div>
+      <button type="submit" form="form" class="btn primary" id="enviar-lado">Enviar pedido</button>
+    </aside>
+    </div>
 
     <div class="sheet" id="recibo" hidden>
       <div class="strip"><span>Pedido nº <b id="r-numero"></b></span><span>Data <b id="r-data"></b></span></div>
@@ -936,7 +964,7 @@ function montarApp(){
   $("cliente-box").hidden=!interno();$("cliente-fixo-box").hidden=interno();
   $("cliente-fixo").textContent=nomeCliente(perfil.cliente_id);
   var podeEnviar=perfil.papel==="cliente";
-  $("enviar").hidden=!podeEnviar;
+  $("enviar").hidden=!podeEnviar;$("enviar-lado").hidden=!podeEnviar;
   $("fil-cliente-box").hidden=!interno();
   opcoesClientes($("cliente"),"Selecione o cliente…",true);
   opcoesClientes($("fil-cliente"),"Todos os clientes",false);
@@ -1138,14 +1166,14 @@ function validar(){
 $("form").addEventListener("submit",async function(e){
   e.preventDefault();
   var erros=validar(),er=$("erro");
-  if(erros.length){msg(er,"bad",erros.join(" "));var inv=document.querySelector("#form .invalid");if(inv)inv.focus();return}
+  if(erros.length){msg(er,"bad",erros.join(" "));er.scrollIntoView({behavior:"smooth",block:"center"});var inv=document.querySelector("#form .invalid");if(inv)inv.focus();return}
   er.hidden=true;
-  var itens=itensCatalogo().concat(itensValidos()),btn=$("enviar");
-  btn.disabled=true;btn.textContent="Enviando…";
+  var itens=itensCatalogo().concat(itensValidos()),btn=$("enviar"),btn2=$("enviar-lado");
+  btn.disabled=btn2.disabled=true;btn.textContent=btn2.textContent="Enviando…";
   var cid=perfil.cliente_id;st.responsavel=perfil.nome||perfil.email||"";
   var r=await sb.rpc("criar_pedido",{p_cliente:cid,p_responsavel:st.responsavel,p_obs:st.obs.trim(),p_itens:itens});
-  btn.disabled=false;btn.textContent="Enviar pedido";
-  if(r.error){msg(er,"bad","O pedido não foi enviado: "+traduz(r.error));return}
+  btn.disabled=btn2.disabled=false;btn.textContent=btn2.textContent="Enviar pedido";
+  if(r.error){msg(er,"bad","O pedido não foi enviado: "+traduz(r.error));er.scrollIntoView({behavior:"smooth",block:"center"});return}
   ultimo={numero:r.data.numero,cliente:nomeCliente(cid),responsavel:st.responsavel.trim(),obs:st.obs.trim(),itens:itens,criado_em:new Date().toISOString(),status:"recebido"};
   cat.qtd={};salvarRascunhoCat();renderCatalogo();
   mostrarRecibo(ultimo);
@@ -2320,7 +2348,7 @@ function rota(){
   if(h==="usuarios"&&!admin())h="";
   if(h==="dashboard"&&!interno())h="";
   if(h!=="pedidos"&&h!=="usuarios"&&h!=="dashboard")h="novo";
-  visao=h;
+  visao=h;document.querySelector(".wrap").classList.toggle("larga",h==="novo");
   ["novo","pedidos","dashboard","usuarios"].forEach(function(v){
     $("v-"+v).hidden=v!==h;$("t-"+v).setAttribute("aria-current",v===h?"page":"false");
   });

@@ -285,6 +285,44 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 @keyframes intro-sair{to{opacity:0;visibility:hidden}}
 @media (max-width:640px){.intro-pular{left:50%;right:auto;transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.intro{display:none}}
+/* logos e lojas */
+.avatar img{width:100%;height:100%;object-fit:contain;background:#fff;border-radius:50%}
+.logo-mini{width:28px;height:28px;border-radius:8px;object-fit:contain;background:#fff;border:1px solid var(--rule);flex:none;vertical-align:middle}
+.selo-ini{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;color:#fff;font-weight:700;flex:none}
+.cli-topo{display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px;padding:14px 16px;border:1px solid var(--rule);border-radius:14px;background:#f8fafc}
+.cli-topo .marca-cli{display:flex;align-items:center;gap:12px}
+.cli-topo .marca-cli img{width:64px;height:64px;border-radius:14px;object-fit:contain;background:#fff;border:1px solid var(--rule)}
+.cli-topo .marca-cli small{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cli-topo .marca-cli b{display:block;font-size:19px;color:var(--azul-escuro)}
+.cli-topo .marca-cli span{font-size:12.5px;color:var(--muted)}
+.lojas-chips{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.loja-chip{display:flex;align-items:center;gap:9px;border:1px solid var(--rule);background:#fff;border-radius:12px;padding:6px 12px 6px 6px}
+.loja-chip i{width:8px;align-self:stretch;border-radius:4px;display:block}
+.loja-chip b{display:block;font-size:13.5px;font-weight:600}
+.loja-chip small{display:block;font-size:11.5px;color:var(--muted)}
+table.cat th.loja{color:#fff;white-space:nowrap}
+table.cat th.loja span{display:inline-flex;align-items:center;gap:6px}
+table.cat th.loja img{width:20px;height:20px;border-radius:5px;background:#fff;object-fit:contain}
+table.cat td.ql{min-width:104px}
+table.cat td.ql input{width:84px;padding:6px 8px;text-align:center;font-family:var(--mono);font-size:13px;display:block;margin:0 auto}
+table.cat td.ql .cx{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;white-space:nowrap}
+table.cat td.ql .cx.fora{color:var(--vermelho);font-weight:600}
+table.cat td.tot-l b{display:block;font-family:var(--mono);font-size:15px;font-weight:600;color:var(--vermelho-escuro)}
+table.cat td.tot-l span{display:block;font-size:10.5px;color:var(--muted)}
+.resumo-lojas{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;padding:12px 22px;background:#f6f8fb;border-top:1px solid var(--rule)}
+.resumo-lojas>div{background:#fff;border:1px solid var(--rule);border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:1px}
+.resumo-lojas span{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--muted)}
+.resumo-lojas span i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.resumo-lojas b{font-family:var(--mono);font-weight:500;font-size:16px}
+.resumo-lojas small{font-size:12px;color:var(--muted)}
+.cl-logo{display:flex;align-items:center;gap:10px}
+.cl-logo label.btn{text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--ink);display:inline-flex;cursor:pointer}
+.cl-logo input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+.lojas-ed{display:flex;flex-direction:column;gap:10px}
+.lojas-ed .linha{display:grid;grid-template-columns:52px minmax(0,1.2fr) minmax(0,1.5fr) minmax(0,1fr) auto 36px;gap:8px;align-items:center}
+.lojas-ed .linha input[type=text]{padding:8px 10px;font-size:14px}
+.lojas-ed .cab{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:720px){.lojas-ed .linha{grid-template-columns:44px 1fr 36px}.lojas-ed .linha .opc{grid-column:2/3}.lojas-ed .cab{display:none}}
 details.lote summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--azul-escuro)}
 details.lote .inner{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
@@ -430,6 +468,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
       </div>
       <div class="block">
         <div class="send"><h2>Catálogo de importação</h2><span class="hint" id="cat-info">Carregando catálogo…</span></div>
+        <div class="cli-topo" id="cli-topo" hidden></div>
         <div class="chips" id="cat-chips" aria-label="Filtrar por categoria"></div>
         <div class="filters">
           <label for="cat-busca">Buscar no catálogo
@@ -453,6 +492,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
           </div>
         </details>
       </div>
+      <div class="resumo-lojas" id="t-lojas" hidden></div>
       <div class="resumo-fixo">
         <div class="resumo">
           <span><b id="t-itens">0</b> itens</span>
@@ -653,9 +693,18 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
         </form>
         <div class="msg bad" id="cl-erro" hidden></div>
         <div class="scroll"><table>
-          <thead><tr><th>Cliente</th><th>Situação</th><th></th></tr></thead>
+          <thead><tr><th>Logo</th><th>Cliente</th><th>Várias lojas</th><th>Lojas</th><th>Situação</th><th></th></tr></thead>
           <tbody id="cl-lista"></tbody>
         </table></div>
+        <div class="sheet" id="lojas-box" hidden style="box-shadow:none;border:1px solid var(--rule)">
+          <div class="block">
+            <div class="send"><h2 id="lojas-tit">Lojas</h2><button type="button" class="btn small" id="lojas-fechar">Fechar</button></div>
+            <div class="hint">Cada loja vira uma coluna de quantidade no pedido desse cliente. Sem logo própria, a loja usa a logo do cliente.</div>
+            <div class="lojas-ed" id="lojas-ed"></div>
+            <div class="msg" id="lojas-msg" hidden></div>
+            <div class="actions"><button type="button" class="btn small" id="lojas-add">+ Adicionar loja</button><button type="button" class="btn primary" id="lojas-salvar">Salvar lojas</button></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -715,7 +764,7 @@ function traduz(e){
 if(!window.supabase){$("v-carregando").textContent="Não foi possível carregar o sistema. Verifique a internet e recarregue a página.";return}
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-var perfil=null,clientes=[],pedidos=[],abertos={},ultimo=null,primeiroAcesso=false;
+var perfil=null,lojas=[],clientes=[],pedidos=[],abertos={},ultimo=null,primeiroAcesso=false;
 var produtos={},canal=null,aoVivo=false,tMudou=null,dashPendente=false,ultimaCarga=null;
 var st={cliente:"",responsavel:"",obs:"",itens:[]};
 function interno(){return perfil&&(perfil.papel==="admin"||perfil.papel==="interno")}
@@ -771,8 +820,10 @@ async function entrar(){
   if(p.error){$("v-carregando").textContent="Não foi possível carregar seu perfil: "+traduz(p.error);return}
   perfil=p.data;
   if(!perfil||!perfil.ativo||perfil.papel==="pendente"){tela("v-bloqueado");return}
-  var c=await sb.from("clientes").select("id,nome,ativo").order("nome");
+  var c=await sb.from("clientes").select("id,nome,ativo,logo,multiloja").order("nome");
   clientes=c.data||[];
+  var lj=await sb.from("lojas").select("id,cliente_id,nome,endereco,cnpj,logo,ordem,ativo").eq("ativo",true).order("ordem");
+  lojas=lj.error?[]:(lj.data||[]);
   montarApp();tela("app");rota();mostrarIntro(false);
 }
 
@@ -818,7 +869,11 @@ function atualizarConta(){
   var nome=perfil.nome||perfil.email||"",ini=iniciais(perfil.nome||perfil.email);
   $("u-nome").textContent=nome;$("u-email").textContent=perfil.email||"";
   $("u-papel").textContent=perfil.papel==="cliente"?nomeCliente(perfil.cliente_id):PAPEIS[perfil.papel];
-  $("u-ini").textContent=ini;$("u-ini2").textContent=ini;
+  var cl=perfil.papel==="cliente"?clientePorId(perfil.cliente_id):null,lg=cl&&urlLogo(cl.logo);
+  [$("u-ini"),$("u-ini2")].forEach(function(n){
+    n.textContent="";
+    if(lg){var im=el("img");im.src=lg;im.alt="";n.appendChild(im)}else n.textContent=ini;
+  });
   $("u-conta-rot").textContent="Menu da conta de "+nome;
   $("mc-usuarios").hidden=!admin();
   $("mc-pedidos-txt").textContent=interno()?"Painel de pedidos":"Meus pedidos";
@@ -900,6 +955,34 @@ function totais(){
   $("t-cx").textContent=cx%1?cx.toLocaleString("pt-BR",{maximumFractionDigits:1}):fmtInt(cx);
   $("t-valor").textContent=valor.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
   $("t-cbm").textContent=cbm.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  var box=$("t-lojas");box.hidden=!cat.lojas.length;box.textContent="";
+  if(cat.lojas.length){
+    var por={};itensCatalogo().forEach(function(i){if(!i.loja_id)return;var c=cat.porId[i.catalogo_id],o=por[i.loja_id]||(por[i.loja_id]={u:0,r:0});o.u+=i.qtd;if(c&&c.preco)o.r+=i.qtd*Number(c.preco)});
+    cat.lojas.forEach(function(l,i){
+      var o=por[l.id]||{u:0,r:0},d=el("div"),s=el("span"),sw=el("i");sw.style.background=corLoja(i);s.appendChild(sw);s.appendChild(document.createTextNode(l.nome));
+      d.appendChild(s);d.appendChild(el("b",null,fmtInt(o.u)+" un"));d.appendChild(el("small",null,"R$ "+o.r.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})+" estimado"));box.appendChild(d);
+    });
+  }
+}
+function renderCliTopo(){
+  var box=$("cli-topo");box.textContent="";
+  var cl=perfil&&perfil.papel==="cliente"?clientePorId(perfil.cliente_id):null;
+  if(!cl){box.hidden=true;return}
+  box.hidden=false;
+  var m=el("div","marca-cli");
+  if(urlLogo(cl.logo)){var im=el("img");im.src=urlLogo(cl.logo);im.alt="Logo "+cl.nome;m.appendChild(im)}else m.appendChild(marcaEl("",cl.nome,64));
+  var t=el("div");t.appendChild(el("small",null,"Pedido de"));t.appendChild(el("b",null,cl.nome));
+  t.appendChild(el("span",null,cat.lojas.length?"Este pedido será dividido entre "+cat.lojas.length+(cat.lojas.length===1?" loja":" lojas"):"Pedido para a loja do cliente"));
+  m.appendChild(t);box.appendChild(m);
+  if(cat.lojas.length){
+    var ch=el("div","lojas-chips");
+    cat.lojas.forEach(function(l,i){
+      var c=el("div","loja-chip"),bar=el("i");bar.style.background=corLoja(i);c.appendChild(bar);
+      c.appendChild(marcaEl(logoLoja(l),l.nome,34,corLoja(i)));
+      var tx=el("div");tx.appendChild(el("b",null,l.nome));if(l.endereco)tx.appendChild(el("small",null,l.endereco));c.appendChild(tx);ch.appendChild(c);
+    });
+    box.appendChild(ch);
+  }
 }
 $("rows").addEventListener("input",function(e){
   var t=e.target;if(!t.dataset.c)return;
@@ -955,7 +1038,7 @@ function validar(){
   if(!itensValidos().length&&!itensCatalogo().length&&!inc)erros.push("Informe a quantidade de pelo menos um produto do catálogo.");
   var ruins=itensCatalogo().filter(function(i){return !qtdValida(cat.porId[i.catalogo_id],i.qtd)});
   if(ruins.length){
-    erros.push((ruins.length===1?"1 item do catálogo não fecha":fmtInt(ruins.length)+" itens do catálogo não fecham")+" caixa inteira ou meia caixa: "+ruins.slice(0,5).map(function(i){return i.ref}).join(", ")+(ruins.length>5?" e outros":"")+". Ajuste as quantidades marcadas em vermelho (use \"Mostrar só os itens com quantidade\" para achá-las).");
+    erros.push((ruins.length===1?"1 item do catálogo não fecha":fmtInt(ruins.length)+" itens do catálogo não fecham")+" caixa inteira ou meia caixa: "+ruins.slice(0,5).map(function(i){var l=i.loja_id&&lojaPorId(i.loja_id);return i.ref+(l?" ("+l.nome+")":"")}).join(", ")+(ruins.length>5?" e outros":"")+". Ajuste as quantidades marcadas em vermelho (use \"Mostrar só os itens com quantidade\" para achá-las).");
   }
   return erros;
 }
@@ -976,6 +1059,21 @@ $("form").addEventListener("submit",async function(e){
 });
 
 
+
+/* ================= LOGOS E LOJAS ================= */
+var CORES_LOJA=["#2a78d6","#eb6834","#1baf7a","#eda100","#e87ba4","#008300","#6250d6","#e34948"];
+function urlLogo(p){if(!p)return "";if(/^https?:\/\//i.test(p))return p;return SUPABASE_URL+"/storage/v1/object/public/logos/"+p.split("/").map(encodeURIComponent).join("/")}
+function clientePorId(id){for(var i=0;i<clientes.length;i++)if(clientes[i].id===id)return clientes[i];return null}
+function lojaPorId(id){for(var i=0;i<lojas.length;i++)if(lojas[i].id===id)return lojas[i];return null}
+function lojasDoCliente(id){return lojas.filter(function(l){return l.cliente_id===id&&l.ativo}).sort(function(a,b){return a.ordem-b.ordem})}
+function corLoja(i){return i<CORES_LOJA.length?CORES_LOJA[i]:"#7a8794"}
+function marcaEl(logo,nome,tam,cor){
+  var src=urlLogo(logo);
+  if(src){var im=el("img","logo-mini");im.src=src;im.alt="";im.style.width=im.style.height=tam+"px";return im}
+  var s=el("span","selo-ini",iniciais(nome));s.style.width=s.style.height=tam+"px";s.style.fontSize=Math.round(tam*.38)+"px";s.style.background=cor||"var(--azul-escuro)";return s;
+}
+function logoLoja(l){var c=clientePorId(l.cliente_id);return l.logo||(c&&c.logo)||""}
+
 /* ================= CATÁLOGO ================= */
 var ROTULOS={imagem:"Imagem",showroom:"Showroom",ref_china:"Ref China",ref_brasil:"Ref Brasil",ref_final:"Referência final",
   descricao_original:"Descrição original",descricao:"Descrição traduzida",categoria:"Categoria",subcategoria:"Subcategoria",
@@ -985,7 +1083,7 @@ var COLUNAS_PADRAO={colunas:[["imagem","Imagem"],["ref_china","Ref China"],["ref
   ["preco","Preço estimado (R$)"],["cx_master","Cx master"],["display","Display"],["moq","MOQ"],["vol_rs","Volume (R$)"]],qtd:"Volume (qtd)"};
 var COLS_LARGAS={descricao_original:1,descricao:1,info:1};
 var COLS_NUM={fob:1,preco:1,cx_master:1,inner_qtd:1,cbm:1,cuft:1,gw:1,nw:1,moq:1,vol_rs:1};
-var cat={cols:COLUNAS_PADRAO.colunas,rotuloQtd:COLUNAS_PADRAO.qtd,itens:[],porId:{},qtd:{},filtro:"",busca:"",so:false,urls:{},pend:{},tPend:null,obs:null,tBusca:null};
+var cat={lojas:[],cols:COLUNAS_PADRAO.colunas,rotuloQtd:COLUNAS_PADRAO.qtd,itens:[],porId:{},qtd:{},filtro:"",busca:"",so:false,urls:{},pend:{},tPend:null,obs:null,tBusca:null};
 function numero(v){if(v==null||v==="")return null;var n=Number(String(v).replace(",","."));return isFinite(n)?n:null}
 function refItem(c){return c.ref_final||c.ref_brasil||c.ref_china||""}
 function chaveRascunho(){return "rascunho-catalogo-"+(perfil&&perfil.id||"")}
@@ -994,12 +1092,28 @@ function carregarRascunhoCat(){
   cat.qtd={};
   try{var r=JSON.parse(localStorage.getItem(chaveRascunho())||"{}");Object.keys(r).forEach(function(k){var q=parseQtd(r[k]);if(q>0)cat.qtd[k]=q})}catch(e){}
 }
+function multiLojas(){
+  if(!perfil||perfil.papel!=="cliente")return [];
+  var cl=clientePorId(perfil.cliente_id);
+  return cl&&cl.multiloja?lojasDoCliente(cl.id):[];
+}
+function chaveQ(id,loja){return loja?id+"@"+loja:String(id)}
+function qtdTotal(id){
+  var ls=cat.lojas;if(!ls.length)return cat.qtd[id]||0;
+  var s=0;ls.forEach(function(l){s+=cat.qtd[chaveQ(id,l.id)]||0});return s;
+}
 function itensCatalogo(){
-  return Object.keys(cat.qtd).map(function(id){
-    var c=cat.porId[id],q=cat.qtd[id];
+  var ordemLoja={};cat.lojas.forEach(function(l,i){ordemLoja[l.id]=i});
+  return Object.keys(cat.qtd).map(function(k){
+    var p=k.split("@"),id=p[0],loja=p[1]||null,c=cat.porId[id],q=cat.qtd[k];
     if(!c||!(q>0))return null;
-    return {ref:refItem(c).slice(0,40),produto:(c.descricao||c.descricao_original||"").slice(0,200),qtd:q,catalogo_id:Number(id)};
-  }).filter(Boolean).sort(function(a,b){return cat.porId[a.catalogo_id].ordem-cat.porId[b.catalogo_id].ordem});
+    if(cat.lojas.length?!(loja in ordemLoja):!!loja)return null;
+    var it={ref:refItem(c).slice(0,40),produto:(c.descricao||c.descricao_original||"").slice(0,200),qtd:q,catalogo_id:Number(id)};
+    if(loja)it.loja_id=loja;
+    return it;
+  }).filter(Boolean).sort(function(a,b){
+    return cat.porId[a.catalogo_id].ordem-cat.porId[b.catalogo_id].ordem||((ordemLoja[a.loja_id]||0)-(ordemLoja[b.loja_id]||0));
+  });
 }
 async function carregarCatalogo(){
   var er=$("cat-erro");er.hidden=true;
@@ -1016,7 +1130,8 @@ async function carregarCatalogo(){
     cat.cols=cf.data.valor.colunas.filter(function(c){return ROTULOS[c[0]]});cat.rotuloQtd=cf.data.valor.qtd||"Quantidade";
   }
   cat.itens=todos;cat.porId={};todos.forEach(function(c){cat.porId[c.id]=c});
-  Object.keys(cat.qtd).forEach(function(k){if(!cat.porId[k])delete cat.qtd[k]});
+  Object.keys(cat.qtd).forEach(function(k){if(!cat.porId[k.split("@")[0]])delete cat.qtd[k]});
+  cat.lojas=multiLojas();renderCliTopo();
   renderCatalogo();
 }
 function textoCel(c,k){
@@ -1042,7 +1157,7 @@ function textoCx(c,q){
 function renderChips(){
   var box=$("cat-chips");box.textContent="";
   var cont={},comQ={};
-  cat.itens.forEach(function(c){var k=c.categoria||"SEM CATEGORIA";cont[k]=(cont[k]||0)+1;if(cat.qtd[c.id]>0)comQ[k]=(comQ[k]||0)+1});
+  cat.itens.forEach(function(c){var k=c.categoria||"SEM CATEGORIA";cont[k]=(cont[k]||0)+1;if(qtdTotal(c.id)>0)comQ[k]=(comQ[k]||0)+1});
   var cats=Object.keys(cont).sort(function(a,b){return cont[b]-cont[a]||a.localeCompare(b,"pt-BR")});
   if(cat.filtro&&!cont[cat.filtro])cat.filtro="";
   var totQ=Object.keys(comQ).reduce(function(s,k){return s+comQ[k]},0);
@@ -1058,7 +1173,7 @@ function filtradosCat(){
   var q=cat.busca.trim().toLowerCase();
   return cat.itens.filter(function(c){
     if(cat.filtro&&(c.categoria||"SEM CATEGORIA")!==cat.filtro)return false;
-    if(cat.so&&!(cat.qtd[c.id]>0))return false;
+    if(cat.so&&!(qtdTotal(c.id)>0))return false;
     if(q){var alvo=[c.ref_china,c.ref_brasil,c.ref_final,c.descricao,c.descricao_original,c.showroom,c.categoria,c.pack].join(" ").toLowerCase();if(alvo.indexOf(q)<0)return false}
     return true;
   });
@@ -1066,7 +1181,7 @@ function filtradosCat(){
 var PAGINA=60;
 function valorLinha(c,q){return q>0&&c.preco?"R$ "+(q*Number(c.preco)).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}):""}
 function linhaCat(c){
-  var q=cat.qtd[c.id]||0,tr=el("tr",q>0?"tem":"");
+  var q=qtdTotal(c.id),tr=el("tr",q>0?"tem":"");tr.dataset.id=c.id;
   cat.cols.forEach(function(col){
     var k=col[0];
     if(k==="vol_rs"){var v=valorLinha(c,q);tr.appendChild(el("td","n volrs"+(v?"":" vazio"),v||"-"));return}
@@ -1078,9 +1193,17 @@ function linhaCat(c){
     var t=textoCel(c,k),cls=COLS_LARGAS[k]?"w":(COLS_NUM[k]?"n":"nw");
     tr.appendChild(el("td",cls+(t?"":" vazio"),t||"-"));
   });
-  var tq=el("td","qtd"),inp=el("input");inp.type="text";inp.inputMode="numeric";inp.maxLength=9;inp.placeholder="0";
-  inp.value=q?String(q):"";inp.dataset.id=c.id;inp.setAttribute("aria-label","Quantidade de "+refItem(c)+" "+(c.descricao||""));
-  var cx=textoCx(c,q);if(cx.fora)inp.classList.add("invalid");tq.appendChild(inp);tq.appendChild(el("span","cx"+(cx.fora?" fora":""),cx.t));tr.appendChild(tq);
+  function campo(td,loja){
+    var qq=cat.qtd[chaveQ(c.id,loja&&loja.id)]||0,inp=el("input");inp.type="text";inp.inputMode="numeric";inp.maxLength=9;inp.placeholder="0";
+    inp.value=qq?String(qq):"";inp.dataset.id=c.id;if(loja)inp.dataset.loja=loja.id;
+    inp.setAttribute("aria-label","Quantidade de "+refItem(c)+(loja?" para "+loja.nome:""));
+    var cx=textoCx(c,qq);if(cx.fora)inp.classList.add("invalid");
+    td.appendChild(inp);td.appendChild(el("span","cx"+(cx.fora?" fora":""),cx.t));
+  }
+  if(cat.lojas.length){
+    cat.lojas.forEach(function(l,i){var td=el("td","ql");td.style.background=corLoja(i)+"14";campo(td,l);tr.appendChild(td)});
+    var tt=el("td","qtd tot-l");tt.appendChild(el("b",null,q?fmtInt(q):"0"));tt.appendChild(el("span",null,textoCx(c,q).t||""));tr.appendChild(tt);
+  }else{var tq=el("td","qtd");campo(tq,null);tr.appendChild(tq)}
   return tr;
 }
 function renderCatalogo(){
@@ -1092,10 +1215,13 @@ function renderCatalogo(){
   $("cat-info").textContent=cat.itens.length?fmtInt(cat.lista.length)+" de "+fmtInt(cat.itens.length)+" itens":"Nenhum item no catálogo ainda.";
   var th=el("thead"),hr=el("tr");
   cat.cols.forEach(function(c){hr.appendChild(el("th",COLS_NUM[c[0]]?"num":"",c[1]))});
-  hr.appendChild(el("th","qtd num",cat.rotuloQtd));th.appendChild(hr);tb.appendChild(th);
+  if(cat.lojas.length){
+    cat.lojas.forEach(function(l,i){var th=el("th","loja"),sp=el("span");th.style.background=corLoja(i);sp.appendChild(marcaEl(logoLoja(l),l.nome,20,"rgba(255,255,255,.25)"));sp.appendChild(document.createTextNode(l.nome.toUpperCase()));th.appendChild(sp);hr.appendChild(th)});
+    hr.appendChild(el("th","qtd num","VOLUME TOTAL"));
+  }else hr.appendChild(el("th","qtd num",cat.rotuloQtd));th.appendChild(hr);tb.appendChild(th);
   var body=el("tbody");body.id="cat-corpo";tb.appendChild(body);
   if(!cat.lista.length){
-    var tr0=el("tr"),td0=el("td","empty",cat.itens.length?"Nenhum item com esses filtros.":"O catálogo ainda não foi importado.");td0.colSpan=cat.cols.length+1;tr0.appendChild(td0);body.appendChild(tr0);
+    var tr0=el("tr"),td0=el("td","empty",cat.itens.length?"Nenhum item com esses filtros.":"O catálogo ainda não foi importado.");td0.colSpan=cat.cols.length+1+cat.lojas.length;tr0.appendChild(td0);body.appendChild(tr0);
   }
   prepararObservador();maisLinhas();totais();
 }
@@ -1108,7 +1234,7 @@ function maisLinhas(){
   body.querySelectorAll("img[data-cat]:not([src])").forEach(function(im){if(cat.obs)cat.obs.observe(im);else pedirImagem(im.dataset.cat)});
   if(cat.mostrados<cat.lista.length){
     var tr=el("tr"),td=el("td","mais","Carregando mais itens… ("+fmtInt(cat.mostrados)+" de "+fmtInt(cat.lista.length)+")");
-    tr.id="cat-mais";td.colSpan=cat.cols.length+1;tr.appendChild(td);body.appendChild(tr);
+    tr.id="cat-mais";td.colSpan=cat.cols.length+1+cat.lojas.length;tr.appendChild(td);body.appendChild(tr);
     if(cat.obsMais)cat.obsMais.observe(tr);
   }
 }
@@ -1117,11 +1243,12 @@ $("cat-tab").addEventListener("input",function(e){
   var inp=e.target;if(!inp.dataset||!inp.dataset.id)return;
   var c=cat.porId[inp.dataset.id];if(!c)return;
   var v=inp.value.replace(/\D/g,"");if(v!==inp.value)inp.value=v;
-  var n=parseQtd(v);if(n>0)cat.qtd[c.id]=n;else delete cat.qtd[c.id];
-  var tr=inp.closest("tr"),sp=inp.nextSibling,x=textoCx(c,n);
-  tr.className=n>0?"tem":"";sp.textContent=x.t;sp.className="cx"+(x.fora?" fora":"");
-  inp.classList.toggle("invalid",x.fora);
-  var vr=tr.querySelector("td.volrs");if(vr){var v=valorLinha(c,n);vr.textContent=v||"-";vr.className="n volrs"+(v?"":" vazio")}
+  var n=parseQtd(v),k=chaveQ(c.id,inp.dataset.loja);if(n>0)cat.qtd[k]=n;else delete cat.qtd[k];
+  var tr=inp.closest("tr"),sp=inp.nextSibling,x=textoCx(c,n),tot=qtdTotal(c.id);
+  sp.textContent=x.t;sp.className="cx"+(x.fora?" fora":"");inp.classList.toggle("invalid",x.fora);
+  tr.className=tot>0?"tem":"";
+  var tl=tr.querySelector("td.tot-l");if(tl){tl.firstChild.textContent=tot?fmtInt(tot):"0";tl.lastChild.textContent=textoCx(c,tot).t||""}
+  var vr=tr.querySelector("td.volrs");if(vr){var vv=valorLinha(c,tot);vr.textContent=vv||"-";vr.className="n volrs"+(vv?"":" vazio")}
   totais();agendarRascunho();
 });
 $("cat-tab").addEventListener("change",function(e){if(e.target.dataset&&e.target.dataset.id)renderChips()});
@@ -1365,16 +1492,17 @@ function textoPedido(p){
   var l=["PEDIDO DE IMPORTAÇÃO "+p.numero,"Cliente: "+p.cliente,"Data: "+fmtData(p.criado_em),"Etapa: "+etapaNome(p.status)];
   if(p.responsavel)l.push("Responsável: "+p.responsavel);
   l.push("","ITENS");
-  p.itens.forEach(function(i,k){l.push((k+1)+". "+(i.ref?"["+i.ref+"] ":"")+(i.produto||"(sem descrição)")+" | "+fmtInt(i.qtd)+" un")});
+  p.itens.forEach(function(i,k){var lj=i.loja_id&&lojaPorId(i.loja_id);l.push((k+1)+". "+(i.ref?"["+i.ref+"] ":"")+(i.produto||"(sem descrição)")+" | "+fmtInt(i.qtd)+" un"+(lj?" → "+lj.nome:""))});
   l.push("","Total: "+fmtInt(p.itens.length)+" itens, "+fmtInt(p.itens.reduce(function(s,i){return s+i.qtd},0))+" unidades");
   if(p.obs)l.push("","Observações: "+p.obs);
   return l.join("\n");
 }
 function baixarCsv(nome,lista){
   function c(v){v=String(v==null?"":v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'}
-  var out=[["Pedido","Data","Cliente","Responsável","Etapa","Item","Código","Produto","Quantidade","Observações"].map(c).join(";")];
+  var out=[["Pedido","Data","Cliente","Responsável","Etapa","Item","Código","Produto","Loja","Quantidade","Observações"].map(c).join(";")];
   lista.forEach(function(p){p.itens.forEach(function(i,k){
-    out.push([p.numero,fmtData(p.criado_em),p.cliente,p.responsavel,etapaNome(p.status),k+1,i.ref,i.produto,i.qtd,p.obs].map(c).join(";"));
+    var lj=i.loja_id&&lojaPorId(i.loja_id);
+    out.push([p.numero,fmtData(p.criado_em),p.cliente,p.responsavel,etapaNome(p.status),k+1,i.ref,i.produto,lj?lj.nome:"",i.qtd,p.obs].map(c).join(";"));
   })});
   var a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob(["﻿"+out.join("\r\n")],{type:"text/csv;charset=utf-8"}));
@@ -1392,7 +1520,9 @@ function linhasItens(tbody,itens){
   itens.forEach(function(i,k){
     var tr=el("tr");
     tr.appendChild(el("td","num",String(k+1)));tr.appendChild(el("td","mono",i.ref||""));
-    tr.appendChild(el("td",null,i.produto||""));tr.appendChild(el("td","num",fmtInt(i.qtd)));
+    var tdp=el("td",null,i.produto||"");
+    var lj=i.loja_id&&lojaPorId(i.loja_id);if(lj){var tg=el("span","pill embarcado","→ "+lj.nome);tg.style.marginLeft="8px";tdp.appendChild(tg)}
+    tr.appendChild(tdp);tr.appendChild(el("td","num",fmtInt(i.qtd)));
     tbody.appendChild(tr);
   });
 }
@@ -1415,7 +1545,7 @@ async function buscarPedidos(){
   var todos=[],de=0,T=1000;
   for(;;){
     var r=await sb.from("pedidos")
-      .select("id,numero,status,responsavel,obs,criado_em,cliente_id,pedido_itens(ordem,ref,produto,qtd)")
+      .select("id,numero,status,responsavel,obs,criado_em,cliente_id,pedido_itens(ordem,ref,produto,qtd,loja_id)")
       .order("criado_em",{ascending:false}).range(de,de+T-1);
     if(r.error)return {error:r.error};
     todos=todos.concat(r.data||[]);
@@ -1467,7 +1597,9 @@ function renderPainel(){
     d.addEventListener("toggle",function(){if(d.open)abertos[p.id]=1;else delete abertos[p.id]});
     var s=el("summary");
     s.appendChild(el("span","num-ped",p.numero));
-    var c=el("span","cli",p.cliente||"");
+    var c=el("span","cli",""),pc=clientePorId(p.cliente_id);
+    c.style.display="flex";c.style.alignItems="center";c.style.gap="8px";c.style.flexWrap="wrap";
+    c.appendChild(marcaEl(pc&&pc.logo,p.cliente||"?",28));c.appendChild(document.createTextNode(p.cliente||""));
     c.appendChild(el("span","meta","  "+fmtData(p.criado_em)+(p.responsavel?" · "+p.responsavel:"")));
     s.appendChild(c);
     s.appendChild(el("span","qt",fmtInt(p.itens.length)+" itens · "+fmtInt(p.unidades)+" un"));
@@ -1580,11 +1712,40 @@ async function carregarUsuarios(){
     tb.appendChild(tr);
   });
 }
+async function enviarLogo(arquivo,pasta,id){
+  if(!arquivo)return null;
+  if(arquivo.size>2*1024*1024)throw new Error("A logo precisa ter até 2 MB.");
+  var ext=(arquivo.name.split(".").pop()||"png").toLowerCase().replace(/[^a-z0-9]/g,"")||"png";
+  var path=pasta+"/"+id+"-"+Date.now()+"."+ext;
+  var up=await sb.storage.from("logos").upload(path,arquivo,{upsert:true,contentType:arquivo.type||undefined,cacheControl:"86400"});
+  if(up.error)throw up.error;
+  return path;
+}
 function renderClientes(){
   var tb=$("cl-lista");tb.textContent="";
   clientes.forEach(function(c){
     var tr=el("tr");
+    var tdl=el("td"),bx=el("div","cl-logo");bx.appendChild(marcaEl(c.logo,c.nome,40));
+    var lb=el("label","btn small"),fi=el("input");fi.type="file";fi.accept="image/png,image/jpeg,image/svg+xml,image/webp";fi.setAttribute("aria-label","Enviar logo de "+c.nome);
+    lb.appendChild(document.createTextNode(c.logo?"Trocar logo":"Enviar logo"));lb.appendChild(fi);bx.appendChild(lb);tdl.appendChild(bx);tr.appendChild(tdl);
+    fi.addEventListener("change",async function(){
+      var er=$("cl-erro");er.hidden=true;
+      try{
+        var path=await enviarLogo(fi.files[0],"clientes",c.id);if(!path)return;
+        var r=await sb.from("clientes").update({logo:path}).eq("id",c.id);if(r.error)throw r.error;
+        c.logo=path;renderClientes();atualizarConta();renderCliTopo();
+      }catch(err){msg(er,"bad","A logo de "+c.nome+" não foi salva: "+traduz(err))}
+    });
     tr.appendChild(el("td",null,c.nome));
+    var tdm=el("td"),cb=el("input");cb.type="checkbox";cb.checked=!!c.multiloja;cb.style.width="auto";cb.setAttribute("aria-label","Cliente com várias lojas: "+c.nome);
+    cb.addEventListener("change",async function(){
+      cb.disabled=true;var r=await sb.from("clientes").update({multiloja:cb.checked}).eq("id",c.id);cb.disabled=false;
+      if(r.error){cb.checked=!cb.checked;msg($("cl-erro"),"bad",traduz(r.error));return}
+      c.multiloja=cb.checked;renderClientes();
+    });
+    tdm.appendChild(cb);tr.appendChild(tdm);
+    var n=lojasDoCliente(c.id).length,tdj=el("td"),bj=el("button","btn small",n?fmtInt(n)+(n===1?" loja":" lojas"):"Cadastrar lojas");bj.type="button";
+    bj.addEventListener("click",function(){abrirLojas(c)});tdj.appendChild(bj);tr.appendChild(tdj);
     tr.appendChild(el("td",null,c.ativo?"Ativo":"Inativo"));
     var td=el("td"),b=el("button","btn small",c.ativo?"Desativar":"Reativar");b.type="button";
     b.addEventListener("click",async function(){
@@ -1596,6 +1757,58 @@ function renderClientes(){
     td.appendChild(b);tr.appendChild(td);tb.appendChild(tr);
   });
 }
+var edLojas={cliente:null,linhas:[]};
+function abrirLojas(c){
+  edLojas.cliente=c;
+  edLojas.linhas=lojasDoCliente(c.id).map(function(l){return {id:l.id,nome:l.nome,endereco:l.endereco,cnpj:l.cnpj,logo:l.logo,arquivo:null,remover:false}});
+  if(!edLojas.linhas.length)edLojas.linhas.push({id:null,nome:"",endereco:"",cnpj:"",logo:"",arquivo:null,remover:false});
+  $("lojas-tit").textContent="Lojas de "+c.nome;$("lojas-msg").hidden=true;$("lojas-box").hidden=false;
+  renderLojasEd();$("lojas-box").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function renderLojasEd(){
+  var box=$("lojas-ed");box.textContent="";
+  var cab=el("div","linha cab");["Logo","Nome da loja","Cidade / endereço","CNPJ","",""].forEach(function(t){cab.appendChild(el("span",null,t))});box.appendChild(cab);
+  edLojas.linhas.forEach(function(l,i){
+    if(l.remover)return;
+    var row=el("div","linha");
+    var lg=el("label","cl-logo"),fi=el("input");fi.type="file";fi.accept="image/png,image/jpeg,image/svg+xml,image/webp";fi.setAttribute("aria-label","Logo da loja "+(l.nome||(i+1)));
+    var prev=l.arquivo?(function(){var im=el("img","logo-mini");im.src=URL.createObjectURL(l.arquivo);im.style.width=im.style.height="44px";return im})():marcaEl(l.logo||edLojas.cliente.logo,l.nome||edLojas.cliente.nome,44,corLoja(i));
+    prev.style.cursor="pointer";prev.title="Trocar logo da loja";lg.appendChild(prev);lg.appendChild(fi);row.appendChild(lg);
+    fi.addEventListener("change",function(){l.arquivo=fi.files[0]||null;renderLojasEd()});
+    [["nome","Nome da loja"],["endereco","Cidade ou endereço"],["cnpj","CNPJ"]].forEach(function(f){
+      var inp=el("input");inp.type="text";inp.value=l[f[0]]||"";inp.placeholder=f[1];inp.maxLength=f[0]==="cnpj"?20:120;inp.setAttribute("aria-label",f[1]);
+      inp.addEventListener("input",function(){l[f[0]]=inp.value});row.appendChild(inp);
+    });
+    var op=el("span","opc hint",l.logo||l.arquivo?"":"usa a logo do cliente");op.style.whiteSpace="nowrap";row.appendChild(op);
+    var x=el("button","x","×");x.type="button";x.setAttribute("aria-label","Remover loja "+(l.nome||""));
+    x.addEventListener("click",function(){if(l.id)l.remover=true;else edLojas.linhas.splice(i,1);renderLojasEd()});
+    row.appendChild(x);box.appendChild(row);
+  });
+}
+$("lojas-add").addEventListener("click",function(){edLojas.linhas.push({id:null,nome:"",endereco:"",cnpj:"",logo:"",arquivo:null,remover:false});renderLojasEd()});
+$("lojas-fechar").addEventListener("click",function(){$("lojas-box").hidden=true});
+$("lojas-salvar").addEventListener("click",async function(){
+  var m=$("lojas-msg"),b=this,c=edLojas.cliente;if(!c)return;
+  var vivas=edLojas.linhas.filter(function(l){return !l.remover});
+  if(vivas.some(function(l){return !l.nome.trim()})){msg(m,"bad","Informe o nome de todas as lojas (ou remova a linha vazia).");return}
+  b.disabled=true;m.hidden=true;
+  try{
+    var ordem=0;
+    for(var i=0;i<edLojas.linhas.length;i++){
+      var l=edLojas.linhas[i];
+      if(l.remover){if(l.id){var rr=await sb.from("lojas").update({ativo:false}).eq("id",l.id);if(rr.error)throw rr.error}continue}
+      var dados={cliente_id:c.id,nome:l.nome.trim().slice(0,120),endereco:(l.endereco||"").trim().slice(0,200),cnpj:(l.cnpj||"").trim().slice(0,20),ordem:ordem++,ativo:true};
+      if(l.id){var ru=await sb.from("lojas").update(dados).eq("id",l.id);if(ru.error)throw ru.error}
+      else{var ri=await sb.from("lojas").insert(dados).select("id").single();if(ri.error)throw ri.error;l.id=ri.data.id}
+      if(l.arquivo){var path=await enviarLogo(l.arquivo,"lojas",l.id);var rl=await sb.from("lojas").update({logo:path}).eq("id",l.id);if(rl.error)throw rl.error;l.logo=path;l.arquivo=null}
+    }
+    var lj=await sb.from("lojas").select("id,cliente_id,nome,endereco,cnpj,logo,ordem,ativo").eq("ativo",true).order("ordem");
+    if(!lj.error)lojas=lj.data||[];
+    if(vivas.length>1&&!c.multiloja){await sb.from("clientes").update({multiloja:true}).eq("id",c.id);c.multiloja=true}
+    msg(m,"ok","Lojas salvas.");renderClientes();abrirLojas(c);msg($("lojas-msg"),"ok","Lojas salvas.");
+  }catch(err){msg(m,"bad","As lojas não foram salvas: "+traduz(err))}
+  b.disabled=false;
+});
 function atualizarClientes(){
   opcoesClientes($("cliente"),"Selecione o cliente…",true);
   opcoesClientes($("fil-cliente"),"Todos os clientes",false);
@@ -1606,7 +1819,7 @@ $("f-cliente").addEventListener("submit",async function(e){
   e.preventDefault();
   var nome=$("nc-nome").value.trim().toUpperCase(),er=$("cl-erro");er.hidden=true;
   if(!nome){msg(er,"bad","Informe o nome do cliente.");return}
-  var r=await sb.from("clientes").insert({nome:nome}).select("id,nome,ativo").single();
+  var r=await sb.from("clientes").insert({nome:nome}).select("id,nome,ativo,logo,multiloja").single();
   if(r.error){msg(er,"bad",/duplicate/i.test(r.error.message)?"Já existe um cliente com esse nome.":traduz(r.error));return}
   clientes.push(r.data);clientes.sort(function(a,b){return a.nome.localeCompare(b.nome,"pt-BR")});
   $("nc-nome").value="";atualizarClientes();

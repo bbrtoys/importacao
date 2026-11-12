@@ -310,7 +310,7 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
 #form[hidden]~.lado{display:none}
 .lado{position:sticky;bottom:10px;z-index:4;margin-top:12px;background:rgba(255,255,255,.97);backdrop-filter:blur(6px);border-radius:18px;padding:10px;box-shadow:0 10px 30px rgba(0,0,0,.28);display:flex;flex-direction:column;gap:8px}
 .lado h3{display:none;margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.lado #enviar-lado{display:none}
+.lado #enviar-lado,.lado #limpar-lado{display:none}
 .big-cards{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:8px;min-width:0}
 .big{background:#f3f6fa;border:1px solid var(--rule);border-radius:14px;padding:9px 14px;display:flex;flex-direction:column;justify-content:center;min-width:0}
 .big small{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
@@ -339,7 +339,8 @@ table.cat td.mais{text-align:center;color:var(--muted);font-size:12.5px;padding:
   .lado .resumo-lojas>div{min-width:0}
   .lado #enviar-lado{display:inline-flex;justify-content:center;width:100%;padding-top:13px;padding-bottom:13px}
   .lado #enviar-lado[hidden]{display:none}
-  #form #enviar{display:none}
+  #form #enviar,#fim-pedido .send{display:none}
+  .lado #limpar-lado{display:inline-flex;justify-content:center;width:100%}
   .wrap.larga .cat-wrap{max-height:calc(100vh - 150px);min-height:420px}
 }
 @media (prefers-reduced-motion:reduce){.big b{transition:none}}
@@ -625,6 +626,7 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
       </div>
       <div class="resumo-lojas" id="t-lojas" hidden></div>
       <button type="submit" form="form" class="btn primary" id="enviar-lado">Enviar pedido</button>
+      <button type="button" class="btn small danger" id="limpar-lado">Limpar tudo</button>
     </aside>
     </div>
 
@@ -1142,10 +1144,11 @@ $("responsavel").addEventListener("input",function(){st.responsavel=this.value})
 $("obs").addEventListener("input",function(){st.obs=this.value});
 (function(){
   var d=$("dlg-limpar");
-  $("limpar").addEventListener("click",function(){
+  function pedir(){
     if(typeof d.showModal==="function"){d.showModal();$("dlg-limpar-nao").focus()}
     else if(confirm("Deseja realmente limpar o pedido todo?"))novoFormulario();
-  });
+  }
+  $("limpar").addEventListener("click",pedir);$("limpar-lado").addEventListener("click",pedir);
   $("dlg-limpar-nao").addEventListener("click",function(){d.close()});
   $("dlg-limpar-sim").addEventListener("click",function(){d.close();novoFormulario()});
   d.addEventListener("click",function(e){if(e.target===d)d.close()});

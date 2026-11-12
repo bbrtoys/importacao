@@ -110,6 +110,19 @@ input:disabled,select:disabled{opacity:.6}
 .btn.primary{background:var(--vermelho);border-color:var(--vermelho);color:#fff;padding:11px 26px;font-size:14.5px}
 .btn.primary:hover{background:var(--vermelho-escuro);border-color:var(--vermelho-escuro);color:#fff}
 .btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+dialog.confirma{border:0;border-radius:20px;padding:0;width:min(420px,calc(100vw - 32px));box-shadow:0 24px 60px rgba(10,30,60,.28);color:var(--ink)}
+dialog.confirma::backdrop{background:rgba(10,25,50,.45);backdrop-filter:blur(2px)}
+dialog.confirma[open]{animation:dlg-in .18s ease-out}
+@keyframes dlg-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+dialog.confirma .corpo{padding:28px 26px 22px;text-align:center}
+dialog.confirma .ico{width:52px;height:52px;border-radius:50%;background:#fde8e6;color:var(--vermelho,#E3352B);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;font-weight:700}
+dialog.confirma h3{margin:0 0 6px;font-size:19px}
+dialog.confirma p{margin:0;color:var(--muted);font-size:14px;line-height:1.45}
+dialog.confirma .acoes{display:flex;gap:10px;justify-content:center;padding:0 26px 24px}
+dialog.confirma .acoes .btn{min-width:120px;justify-content:center}
+dialog.confirma .btn.sim{background:var(--vermelho,#E3352B);border-color:var(--vermelho,#E3352B);color:#fff}
+dialog.confirma .btn.sim:hover{filter:brightness(.92);color:#fff}
+@media (prefers-reduced-motion:reduce){dialog.confirma[open]{animation:none}}
 .btn.small{padding:6px 14px;font-size:12.5px}
 .btn:disabled{opacity:.55;cursor:default}
 .actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -726,6 +739,10 @@ details.lote textarea{font-family:var(--mono);font-size:13px;min-height:120px}
   <button class="intro-pular" type="button" id="intro-pular">Pular introdução</button>
 </div>
 <div id="tip" role="tooltip" hidden></div>
+<dialog class="confirma" id="dlg-limpar" aria-labelledby="dlg-limpar-t">
+  <div class="corpo"><div class="ico" aria-hidden="true">!</div><h3 id="dlg-limpar-t">Deseja realmente limpar o pedido todo?</h3><p>Todas as quantidades e observações deste pedido serão apagadas. Essa ação não pode ser desfeita.</p></div>
+  <div class="acoes"><button type="button" class="btn" id="dlg-limpar-nao">Cancelar</button><button type="button" class="btn sim" id="dlg-limpar-sim">Sim, limpar</button></div>
+</dialog>
 <div id="zoom" hidden><figure><img id="zoom-img" alt=""><figcaption id="zoom-cap"></figcaption></figure></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -1018,12 +1035,16 @@ $("add").addEventListener("click",function(){st.itens.push(linhaVazia());renderL
 $("cliente").addEventListener("change",function(){st.cliente=this.value;this.classList.remove("invalid")});
 $("responsavel").addEventListener("input",function(){st.responsavel=this.value});
 $("obs").addEventListener("input",function(){st.obs=this.value});
-var limparArmado=false,tLimpar=null;
-$("limpar").addEventListener("click",function(){
-  var b=this;
-  if(!limparArmado){limparArmado=true;b.textContent="Clique de novo para limpar";tLimpar=setTimeout(function(){limparArmado=false;b.textContent="Limpar tudo"},3500);return}
-  clearTimeout(tLimpar);limparArmado=false;b.textContent="Limpar tudo";novoFormulario();
-});
+(function(){
+  var d=$("dlg-limpar");
+  $("limpar").addEventListener("click",function(){
+    if(typeof d.showModal==="function"){d.showModal();$("dlg-limpar-nao").focus()}
+    else if(confirm("Deseja realmente limpar o pedido todo?"))novoFormulario();
+  });
+  $("dlg-limpar-nao").addEventListener("click",function(){d.close()});
+  $("dlg-limpar-sim").addEventListener("click",function(){d.close();novoFormulario()});
+  d.addEventListener("click",function(e){if(e.target===d)d.close()});
+})();
 function validar(){
   var erros=[];
   document.querySelectorAll("#form .invalid").forEach(function(n){n.classList.remove("invalid")});

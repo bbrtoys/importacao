@@ -3861,7 +3861,7 @@
                     <option value="">Todas</option>
                     <option value="abaixo">Abaixo do mínimo</option>
                     <option value="atingiu">Atingiu o mínimo</option>
-                    <option value="semmin">Sem mínimo cadastrado</option>
+                    <option value="semmin">Sem MOQ na planilha</option>
                   </select>
                 </label>
                 <label for="d-busca"
@@ -3880,13 +3880,14 @@
                 <input type="checkbox" id="d-sempedido" /><label
                   for="d-sempedido"
                   style="display: inline; font-weight: 400"
-                  >Mostrar também produtos com mínimo cadastrado que ainda não
+                  >Mostrar também produtos com MOQ na planilha que ainda não
                   têm pedido</label
                 >
               </div>
               <div class="hint">
                 Os itens são somados pelo código. O mínimo para importação é
-                digitado na própria tabela e vale para o código.
+                o MOQ da planilha do catálogo; MOQ em branco conta como sem
+                mínimo.
               </div>
               <div class="msg bad" id="d-erro" hidden></div>
             </div>
@@ -3934,7 +3935,7 @@
             </div>
             <div class="scroll"><table class="dash" id="d-tabela"></table></div>
             <div class="block">
-              <details class="lote">
+              <details class="lote" hidden style="display: none">
                 <summary>Cadastrar mínimos em lote</summary>
                 <div class="inner">
                   <div class="hint">
@@ -8294,6 +8295,14 @@
             );
           return fmtRs(v);
         }
+        function moqPorRef() {
+          var m = {};
+          cat.itens.forEach(function (c) {
+            var r = refItem(c).trim().toUpperCase();
+            if (r && c.moq > 0 && !(m[r] && m[r].moq >= c.moq)) m[r] = c;
+          });
+          return m;
+        }
         function chaveItem(i) {
           var r = (i.ref || "").trim().toUpperCase();
           return r
@@ -8324,15 +8333,6 @@
           var er = $("d-erro");
           var ok = await carregarDados(er);
           if (!ok) return;
-          var e = await carregarProdutos();
-          if (e) {
-            msg(
-              er,
-              "bad",
-              "Não foi possível carregar os mínimos: " + traduz(e)
-            );
-            return;
-          }
           renderDashboard();
         }
         function linhasDashboard() {
@@ -8360,6 +8360,8 @@
                   data: ""
                 };
               }
+              if (i.catalogo_id && cat.porId[i.catalogo_id])
+                l.cat = cat.porId[i.catalogo_id];
               var pr0 = precoDe(i);
               l.valor += i.qtd * pr0;
               if (!pr0) l.semPreco += i.qtd;
@@ -8375,29 +8377,30 @@
               usados[p.cliente_id] = 1;
             });
           });
+          var moqs = moqPorRef();
           if ($("d-sempedido").checked) {
-            Object.keys(produtos).forEach(function (ref) {
-              var pr = produtos[ref];
-              if (pr.minimo > 0 && !mapa["R:" + ref])
+            Object.keys(moqs).forEach(function (ref) {
+              var c = moqs[ref];
+              if (!mapa["R:" + ref])
                 mapa["R:" + ref] = {
                   k: "R:" + ref,
                   ref: ref,
-                  produto: pr.descricao || "",
+                  produto: c.descricao || c.descricao_original || "",
                   porCliente: {},
                   vCliente: {},
                   total: 0,
                   valor: 0,
                   semPreco: 0,
-                  data: ""
+                  data: "",
+                  cat: c
                 };
             });
           }
           var linhas = Object.keys(mapa)
             .map(function (k) {
               var l = mapa[k],
-                pr = l.ref ? produtos[l.ref] : null;
-              l.minimo = pr ? pr.minimo : 0;
-              if (pr && pr.descricao) l.produto = pr.descricao;
+                c = (l.cat && l.cat.moq > 0 && l.cat) || (l.ref && moqs[l.ref]);
+              l.minimo = c ? c.moq : 0;
               l.sit = !l.minimo
                 ? "semmin"
                 : l.total >= l.minimo
@@ -8568,7 +8571,12 @@
           });
           [
             ["Itens no catálogo", Object.keys(refsChina).length],
-            ["Itens com pedido", linhas.length],
+            [
+              "Itens com pedido",
+              linhas.filter(function (l) {
+                return l.total > 0;
+              }).length
+            ],
             [
               "Unidades pedidas",
               linhas.reduce(function (s, l) {
@@ -8588,7 +8596,7 @@
               }).length
             ],
             [
-              "Sem mínimo",
+              "Sem MOQ",
               linhas.filter(function (l) {
                 return l.sit === "semmin";
               }).length
@@ -8626,7 +8634,7 @@
           });
           hr.appendChild(el("th", "num tot", "Total pedido"));
           hr.appendChild(el("th", "num", "Valor estimado"));
-          hr.appendChild(el("th", "num", "Mínimo p/ importação"));
+          hr.appendChild(el("th", "num", "MOQ (mínimo)"));
           hr.appendChild(el("th", null, "Situação"));
           th.appendChild(hr);
           tb.appendChild(th);
@@ -8651,71 +8659,17 @@
               tdv.title =
                 fmtInt(l.semPreco) + " unidades sem preço no catálogo";
             tr.appendChild(tdv);
-            var tdm = el("td", "num");
-            if (l.ref) {
-              var inp = el("input", "min");
-              inp.type = "text";
-              inp.inputMode = "numeric";
-              inp.maxLength = 9;
-              inp.value = l.minimo ? String(l.minimo) : "";
-              inp.placeholder = "definir";
-              inp.setAttribute(
-                "aria-label",
-                "Mínimo para importação do código " + l.ref
-              );
-              inp.addEventListener("input", function () {
-                var v = inp.value.replace(/\D/g, "");
-                if (v !== inp.value) inp.value = v;
-              });
-              inp.addEventListener("keydown", function (e) {
-                if (e.key === "Enter") inp.blur();
-              });
-              inp.addEventListener("blur", async function () {
-                var novo = parseQtd(inp.value);
-                if (novo !== l.minimo) {
-                  var r = await sb.from("produtos").upsert(
-                    {
-                      ref: l.ref,
-                      descricao:
-                        (produtos[l.ref] && produtos[l.ref].descricao) ||
-                        l.produto ||
-                        "",
-                      minimo: novo,
-                      atualizado_em: new Date().toISOString()
-                    },
-                    { onConflict: "ref" }
-                  );
-                  if (r.error) {
-                    msg(
-                      $("d-erro"),
-                      "bad",
-                      "O mínimo do código " +
-                        l.ref +
-                        " não foi salvo: " +
-                        traduz(r.error)
-                    );
-                  } else {
-                    produtos[l.ref] = {
-                      ref: l.ref,
-                      descricao:
-                        (produtos[l.ref] && produtos[l.ref].descricao) ||
-                        l.produto ||
-                        "",
-                      minimo: novo
-                    };
-                    $("d-erro").hidden = true;
-                  }
-                }
-                setTimeout(renderDashboard, 0);
-              });
-              tdm.appendChild(inp);
-            } else tdm.textContent = "-";
+            var tdm = el(
+              "td",
+              "num" + (l.minimo ? "" : " zero"),
+              l.minimo ? fmtInt(l.minimo) : "-"
+            );
             tr.appendChild(tdm);
             var tds = el("td"),
               box = el("div", "sit");
             if (l.sit === "semmin")
               box.appendChild(
-                el("span", "pill semmin", l.ref ? "Sem mínimo" : "Sem código")
+                el("span", "pill semmin", l.ref ? "Sem MOQ" : "Sem código")
               );
             else {
               var dif = l.total - l.minimo;
@@ -8769,7 +8723,7 @@
             .concat([
               ["Total pedido", "i"],
               ["Valor estimado", "r"],
-              ["Mínimo para importação", "i"],
+              ["MOQ (mínimo)", "i"],
               ["Diferença", "i"],
               ["Situação", "t"]
             ]);
@@ -8789,7 +8743,7 @@
                   ? "Atingiu"
                   : l.sit === "abaixo"
                     ? "Abaixo do mínimo"
-                    : "Sem mínimo"
+                    : "Sem MOQ"
               ]);
           });
           baixarXlsx(
@@ -8983,7 +8937,7 @@
               el(
                 "div",
                 "vazio",
-                "Nenhum item com mínimo cadastrado nos filtros atuais. Defina o mínimo na coluna da tabela."
+                "Nenhum item com MOQ nos filtros atuais. O MOQ vem da coluna MOQ da planilha do catálogo."
               )
             );
           } else {

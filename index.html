@@ -3242,16 +3242,16 @@
       #v-dashboard .d-valor .etapas b { color: #173b5a; font-size: clamp(16px, 1.5vw, 22px); margin: 12px 0 6px; letter-spacing: -.04em; }
       #v-dashboard .d-valor .etapas small { color: #5b6c7d; font-size: 10px; opacity: 1; }
       #v-dashboard .tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
-      #v-dashboard .tile {
+      :is(#v-dashboard, #v-pedidos) .tile {
         margin: 0; align-items: flex-start; padding: 17px 18px;
         border: 1px solid #e0e7ef; border-radius: 12px; background: #fff; gap: 8px;
       }
-      #v-dashboard .tile span {
+      :is(#v-dashboard, #v-pedidos) .tile span {
         padding: 0; margin: 0; background: none; box-shadow: none; border-radius: 0;
         color: #53677a; font-size: 10px; text-transform: none; letter-spacing: 0; text-align: left;
       }
-      #v-dashboard .tile b { color: #173b5a; font-size: clamp(22px, 2vw, 30px); font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; }
-      #v-dashboard .tile small { font-size: 10px; color: #68798a; }
+      :is(#v-dashboard, #v-pedidos) .tile b { color: #173b5a; font-size: clamp(22px, 2vw, 30px); font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; }
+      :is(#v-dashboard, #v-pedidos) .tile small { font-size: 10px; color: #68798a; }
       #v-dashboard .tile.d-kpi-ok { background: #eef5fc; border-color: #d4e4f5; }
       #v-dashboard .tile.d-kpi-warn { background: #fff2ef; border-color: #f0d9d3; }
       #v-dashboard .tile.d-kpi-warn b { color: #a33628; }
@@ -3282,6 +3282,23 @@
       #v-dashboard .dash tbody tr:hover { background: #f6f9fc; }
       #v-dashboard .d-detail + .block { display: none; }
       #v-dashboard :focus-visible { outline: 2px solid var(--azul); outline-offset: 3px; }
+      #v-pedidos .p-summary {
+        display: flex; flex-direction: column; gap: 14px;
+        padding: 18px; background: #f4f7fb; border: 1px solid #e0e7ef; border-radius: 14px;
+      }
+      #v-pedidos .p-summary .tiles {
+        grid-template-columns: repeat(var(--tile-columns, 4), minmax(0, 1fr)); gap: 14px;
+      }
+      #v-pedidos .p-values .tile b { font-size: clamp(19px, 1.7vw, 28px); letter-spacing: -.03em; }
+      #v-pedidos .p-values .tile:first-child { background: #0d406a; border-color: #0d406a; }
+      #v-pedidos .p-values .tile:first-child b { color: #fff; }
+      #v-pedidos .p-values .tile:first-child span,
+      #v-pedidos .p-values .tile:first-child small { color: #d8e7f4; }
+      #v-pedidos .p-summary .hint { margin: 0; font-size: 11px; color: #586b7d; }
+      #v-dashboard .hb-row .val { white-space: normal; overflow-wrap: anywhere; }
+      @media (max-width: 900px) {
+        #v-pedidos .p-summary .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
       @media (max-width: 1100px) {
         #v-dashboard .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         #v-dashboard .d-valor { grid-template-columns: 1fr; }
@@ -3306,6 +3323,13 @@
         #v-dashboard .d-detail { margin: 0 14px 18px; }
         #v-dashboard .d-detail .d-section-heading { padding: 16px; }
         #v-dashboard .d-section-heading { flex-wrap: wrap; }
+        #v-pedidos .p-summary { padding: 12px; gap: 12px; }
+        #v-pedidos .p-summary .tiles { gap: 10px; }
+        #v-pedidos .tile { padding: 14px; }
+        #v-pedidos .p-summary .p-values { grid-template-columns: 1fr; }
+        #v-dashboard #g2 .hb-row { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+        #v-dashboard #g2 .hb-row .val { max-width: 190px; }
+        #v-dashboard #g2 .hb-row .trk { grid-column: 1 / -1; grid-row: 2; }
       }
     </style>
   </head>
@@ -3911,7 +3935,11 @@
                   Atualizar
                 </button>
               </div>
-              <div class="tiles" id="tiles"></div>
+              <div class="p-summary" aria-label="Resumo dos pedidos filtrados">
+                <div class="tiles" id="tiles"></div>
+                <div class="tiles p-values" id="p-valores"></div>
+                <p class="hint">Valores estimados pelo preço do catálogo, considerando os filtros e as categorias selecionadas.</p>
+              </div>
               <div class="filters">
                 <label for="fil-cliente" id="fil-cliente-box"
                   >Cliente
@@ -7528,24 +7556,41 @@
               if (fl === b.dataset.kp) b.focus();
             });
         }
-        function renderPainel() {
-          var lista = filtrados(),
-            tiles = $("tiles");
-          tiles.style.setProperty("--tile-columns", ETAPAS_VISIVEIS.length + 1);
-          tiles.textContent = "";
-          var t = el("div", "tile");
-          t.appendChild(el("span", null, "Pedidos"));
-          t.appendChild(el("b", null, fmtInt(lista.length)));
-          tiles.appendChild(t);
-          ETAPAS_VISIVEIS.forEach(function (e) {
-            var n = lista.filter(function (p) {
-              return p.status === e[0];
-            }).length;
-            var d = el("div", "tile");
-            d.appendChild(el("span", null, e[1]));
-            d.appendChild(el("b", null, fmtInt(n)));
-            tiles.appendChild(d);
+        function resumoPedidos(lista) {
+          var grupos = [{ etapa: "", nome: "Pedidos", quantidade: 0, valor: 0 }].concat(
+            ETAPAS_VISIVEIS.map(function (e) {
+              return { etapa: e[0], nome: e[1], quantidade: 0, valor: 0 };
+            })
+          );
+          lista.forEach(function (p) {
+            var valor = resumoItens(itensVis(p)).valor;
+            grupos.forEach(function (g) {
+              if (!g.etapa || g.etapa === p.status) {
+                g.quantidade++;
+                g.valor += valor;
+              }
+            });
           });
+          return grupos;
+        }
+        function renderResumoPedidos(lista) {
+          var grupos = resumoPedidos(lista);
+          ["tiles", "p-valores"].forEach(function (id) {
+            var box = $(id), monetario = id === "p-valores";
+            box.style.setProperty("--tile-columns", grupos.length);
+            box.textContent = "";
+            grupos.forEach(function (g) {
+              var card = el("div", "tile");
+              card.appendChild(el("span", null, monetario && !g.etapa ? "Valor total estimado" : g.nome));
+              card.appendChild(el("b", null, monetario ? fmtRs(g.valor) : fmtInt(g.quantidade)));
+              card.appendChild(el("small", null, monetario ? "Valor estimado (R$)" : "Pedidos nos filtros atuais"));
+              box.appendChild(card);
+            });
+          });
+        }
+        function renderPainel() {
+          var lista = filtrados();
+          renderResumoPedidos(lista);
           renderPCats(filtrados(true));
           var tb = $("p-tab");
           tb.textContent = "";
@@ -8437,21 +8482,6 @@
           var c = i.catalogo_id && cat.porId[i.catalogo_id];
           return c && c.preco ? Number(c.preco) : 0;
         }
-        function fmtRsCurto(v) {
-          if (v >= 1e6)
-            return (
-              "R$ " +
-              (Math.round(v / 1e4) / 100).toLocaleString("pt-BR") +
-              " mi"
-            );
-          if (v >= 1e4)
-            return (
-              "R$ " +
-              (Math.round(v / 100) / 10).toLocaleString("pt-BR") +
-              " mil"
-            );
-          return fmtRs(v);
-        }
         function noCatalogo(i) {
           return !!(i.catalogo_id && cat.porId[i.catalogo_id]);
         }
@@ -9055,11 +9085,6 @@
           });
           node.addEventListener("blur", esconderTip);
         }
-        function compacto(n) {
-          return n >= 10000
-            ? (Math.round(n / 100) / 10).toLocaleString("pt-BR") + " mil"
-            : fmtInt(n);
-        }
         function eixoTopo(max) {
           if (max <= 0) return 1;
           var p = Math.pow(10, Math.floor(Math.log10(max))),
@@ -9241,7 +9266,7 @@
                 pct = tot ? Math.round((x.q / tot) * 100) : 0;
               v.innerHTML =
                 "<b>" +
-                (porValor ? esc(fmtRsCurto(x.v)) : compacto(x.u)) +
+                (porValor ? esc(fmtRs(x.v)) : fmtInt(x.u)) +
                 "</b> · " +
                 pct +
                 "%";
@@ -9398,13 +9423,13 @@
             );
             return;
           }
-          var W = 600,
+          var top = eixoTopo(maxD),
+            W = 600,
             H = 230,
-            L = 46,
+            L = Math.max(46, fmtInt(top).length * 7 + 14),
             R = 8,
             T = 12,
             B = 26,
-            top = eixoTopo(maxD),
             pw = (W - L - R) / 30,
             bw = Math.min(24, pw - 4);
           var NS = "http://www.w3.org/2000/svg";
@@ -9435,7 +9460,7 @@
               })
             );
             var tx = sv("text", { x: L - 8, y: y + 3.5, "text-anchor": "end" });
-            tx.textContent = compacto(top * f);
+            tx.textContent = fmtInt(top * f);
             svg.appendChild(tx);
           });
           dias.forEach(function (x, i) {

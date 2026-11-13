@@ -5,8 +5,9 @@
 --
 -- Regras de edição:
 --   * admin e interno (BBR Toys) editam qualquer pedido;
---   * o cliente edita só os pedidos que ele mesmo criou e só enquanto o
---     pedido estiver na etapa "Recebido".
+--   * o cliente edita só os pedidos que ele mesmo criou, até 04/12/2026 às
+--     23:59 (horário de Brasília). Para mudar o prazo, troque a data em
+--     editar_pedido abaixo e a constante PRAZO_EDICAO no index.html.
 -- =====================================================================
 
 -- ---------- prioridade de fabricação por item ----------
@@ -127,8 +128,8 @@ begin
     if v_ped.criado_por is distinct from auth.uid() then
       raise exception 'Você só pode editar os pedidos que você mesmo enviou.';
     end if;
-    if v_ped.status <> 'recebido' then
-      raise exception 'Este pedido já está em análise pela BBR Toys e não pode mais ser editado. Fale com a BBR Toys para alterar.';
+    if now() >= (timestamp '2026-12-05 00:00' at time zone 'America/Sao_Paulo') then
+      raise exception 'O prazo para editar pedidos terminou em 04/12/2026 às 23:59. Fale com a BBR Toys para alterar.';
     end if;
   elsif v_papel not in ('admin', 'interno') then
     raise exception 'Seu usuário não tem permissão para editar pedidos.';

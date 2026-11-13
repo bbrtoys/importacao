@@ -5438,17 +5438,23 @@
         });
 
         /* ================= EDIÇÃO DE PEDIDO ================= */
-        // Admin e BBR Toys editam qualquer pedido; o cliente só os que ele
-        // mesmo enviou e enquanto estiverem em "Recebido". O banco confere
-        // as mesmas regras na função editar_pedido.
+        // Admin e BBR Toys editam qualquer pedido, sem prazo; o cliente edita
+        // os pedidos que ele mesmo enviou até 04/12/2026 às 23:59 (Brasília).
+        // O banco confere as mesmas regras na função editar_pedido.
+        var PRAZO_EDICAO = new Date("2026-12-05T00:00:00-03:00"),
+          PRAZO_EDICAO_TXT = "04/12/2026 às 23:59";
+        function dentroDoPrazo() {
+          return Date.now() < PRAZO_EDICAO.getTime();
+        }
+        function ehPedidoMeu(p) {
+          return (
+            perfil && perfil.papel === "cliente" && p.criado_por === perfil.id
+          );
+        }
         function podeEditar(p) {
           if (!bancoAtualizado || !perfil) return false;
           if (interno()) return true;
-          return (
-            perfil.papel === "cliente" &&
-            p.criado_por === perfil.id &&
-            p.status === "recebido"
-          );
+          return ehPedidoMeu(p) && dentroDoPrazo();
         }
         function entrarEdicao(p) {
           if (!cat.itens.length) {
@@ -5539,12 +5545,26 @@
                 ? " linha do pedido não aparece no catálogo (item fora do catálogo ou loja desativada) e será mantida como está."
                 : " linhas do pedido não aparecem no catálogo (item fora do catálogo ou loja desativada) e serão mantidas como estão.")
             : "Seu rascunho de novo pedido fica guardado e volta quando você terminar.";
+          if (perfil.papel === "cliente")
+            $("edit-sub").textContent +=
+              " Você pode editar este pedido até " + PRAZO_EDICAO_TXT + ".";
         }
         async function salvarEdicao() {
           var ed = cat.edit,
             er = $("erro"),
             btn = $("enviar"),
             btn2 = $("enviar-lado");
+          if (perfil.papel === "cliente" && !dentroDoPrazo()) {
+            msg(
+              er,
+              "bad",
+              "O prazo para editar pedidos terminou em " +
+                PRAZO_EDICAO_TXT +
+                ". Fale com a BBR Toys para alterar."
+            );
+            er.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          }
           var itens = itensCatalogo().concat(
             ed.manter.map(function (i) {
               var x = {
@@ -8629,6 +8649,18 @@
               });
               a.appendChild(be);
             }
+            if (bancoAtualizado && ehPedidoMeu(p))
+              b.appendChild(
+                el(
+                  "div",
+                  "hint",
+                  dentroDoPrazo()
+                    ? "Você pode editar este pedido até " + PRAZO_EDICAO_TXT + "."
+                    : "O prazo para editar pedidos terminou em " +
+                        PRAZO_EDICAO_TXT +
+                        ". Fale com a BBR Toys para alterar."
+                )
+              );
             var bc = el("button", "btn small", "Copiar");
             bc.type = "button";
             bc.addEventListener("click", function () {

@@ -748,6 +748,113 @@
         gap: 10px;
         align-items: flex-end;
       }
+      /* faixa de valor do dashboard */
+      .d-valor {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr);
+        gap: 18px 28px;
+        align-items: center;
+        background: var(--azul-escuro);
+        color: #fff;
+        border-radius: 18px;
+        padding: 20px 24px;
+      }
+      .d-valor .rot {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.85;
+      }
+      .d-valor .d-total {
+        display: block;
+        font-size: 38px;
+        font-weight: 700;
+        line-height: 1.15;
+        margin: 4px 0 6px;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+      }
+      .d-valor .d-total small {
+        font-size: 20px;
+        font-weight: 600;
+        margin-right: 6px;
+        opacity: 0.9;
+      }
+      .d-valor .sub {
+        font-size: 14px;
+        opacity: 0.9;
+        line-height: 1.45;
+      }
+      .d-valor .aviso {
+        display: block;
+        margin-top: 6px;
+        font-size: 12.5px;
+        color: #ffd9a8;
+      }
+      .d-valor .etapas {
+        display: grid;
+        grid-template-columns: repeat(var(--etapa-columns, 3), minmax(0, 1fr));
+        gap: 10px;
+      }
+      .d-valor .etapas > div {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 14px;
+        padding: 12px 14px;
+        min-width: 0;
+      }
+      .d-valor .etapas span {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .d-valor .etapas span i {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex: none;
+      }
+      .d-valor .etapas b {
+        display: block;
+        font-size: 21px;
+        font-weight: 700;
+        margin: 4px 0 2px;
+        font-variant-numeric: tabular-nums;
+        overflow-wrap: anywhere;
+      }
+      .d-valor .etapas small {
+        font-size: 12px;
+        opacity: 0.85;
+      }
+      .graf .seg {
+        display: flex;
+        border: 0;
+        border-radius: 4px;
+        overflow: visible;
+        height: 22px;
+        background: none;
+        margin-bottom: 12px;
+      }
+      .seg-tab .rs {
+        color: var(--azul-escuro);
+        font-weight: 600;
+        font-size: 13px;
+      }
+      @media (max-width: 900px) {
+        .d-valor {
+          grid-template-columns: 1fr;
+        }
+        .d-valor .d-total {
+          font-size: 30px;
+        }
+      }
+      @media (max-width: 560px) {
+        .d-valor .etapas {
+          grid-template-columns: 1fr;
+        }
+      }
       .filters label {
         flex: 1 1 170px;
       }
@@ -3733,6 +3840,7 @@
                   ><i></i><span id="d-vivo-txt">Conectando…</span></span
                 >
               </div>
+              <div class="d-valor" id="d-valor"></div>
               <div class="tiles" id="d-tiles"></div>
               <div class="filters">
                 <label for="d-cliente"
@@ -3802,12 +3910,14 @@
                   <div id="g1"></div>
                 </section>
                 <section class="graf" aria-labelledby="g2-t">
-                  <h3 id="g2-t">Unidades por cliente</h3>
-                  <div class="sub">Soma dos itens filtrados.</div>
+                  <h3 id="g2-t">Valor por cliente</h3>
+                  <div class="sub" id="g2-s">
+                    Valor estimado dos itens filtrados, pelo preço do catálogo.
+                  </div>
                   <div id="g2"></div>
                 </section>
                 <section class="graf" aria-labelledby="g3-t">
-                  <h3 id="g3-t">Unidades por etapa do pedido</h3>
+                  <h3 id="g3-t">Unidades e valor por etapa do pedido</h3>
                   <div class="sub">
                     Quanto do volume ainda está sem validação.
                   </div>
@@ -5221,6 +5331,8 @@
             pedidos.length
           )
             renderPainel();
+          if (typeof visao !== "undefined" && visao === "dashboard")
+            renderDashboard();
         }
         function textoCel(c, k) {
           var v = c[k];
@@ -8163,6 +8275,25 @@
         });
 
         /* ================= DASHBOARD DE ITENS ================= */
+        function precoDe(i) {
+          var c = i.catalogo_id && cat.porId[i.catalogo_id];
+          return c && c.preco ? Number(c.preco) : 0;
+        }
+        function fmtRsCurto(v) {
+          if (v >= 1e6)
+            return (
+              "R$ " +
+              (Math.round(v / 1e4) / 100).toLocaleString("pt-BR") +
+              " mi"
+            );
+          if (v >= 1e4)
+            return (
+              "R$ " +
+              (Math.round(v / 100) / 10).toLocaleString("pt-BR") +
+              " mil"
+            );
+          return fmtRs(v);
+        }
         function chaveItem(i) {
           var r = (i.ref || "").trim().toUpperCase();
           return r
@@ -8222,10 +8353,18 @@
                   ref: c.ref,
                   produto: i.produto || "",
                   porCliente: {},
+                  vCliente: {},
                   total: 0,
+                  valor: 0,
+                  semPreco: 0,
                   data: ""
                 };
               }
+              var pr0 = precoDe(i);
+              l.valor += i.qtd * pr0;
+              if (!pr0) l.semPreco += i.qtd;
+              l.vCliente[p.cliente_id] =
+                (l.vCliente[p.cliente_id] || 0) + i.qtd * pr0;
               if ((i.produto || "") && p.criado_em > l.data) {
                 l.produto = i.produto;
                 l.data = p.criado_em;
@@ -8245,7 +8384,10 @@
                   ref: ref,
                   produto: pr.descricao || "",
                   porCliente: {},
+                  vCliente: {},
                   total: 0,
+                  valor: 0,
+                  semPreco: 0,
                   data: ""
                 };
             });
@@ -8291,6 +8433,119 @@
             (aoVivo ? "Ao vivo" : "Atualiza a cada 30 s") +
             (h ? " · atualizado às " + h : "");
         }
+        function renderValorDash(linhas) {
+          var fc = $("d-cliente").value,
+            fs = $("d-status").value,
+            vis = {},
+            porEt = {},
+            nPed = 0,
+            cli = {},
+            un = 0,
+            semP = 0,
+            tot = 0;
+          linhas.forEach(function (l) {
+            vis[l.k] = 1;
+          });
+          pedidos.forEach(function (p) {
+            if (fc && p.cliente_id !== fc) return;
+            if (fs && p.status !== fs) return;
+            var v = 0,
+              u = 0;
+            p.itens.forEach(function (i) {
+              if (!vis[chaveItem(i).k]) return;
+              var pr = precoDe(i);
+              u += i.qtd;
+              v += i.qtd * pr;
+              if (!pr) semP += i.qtd;
+            });
+            if (!u) return;
+            nPed++;
+            cli[p.cliente_id] = 1;
+            un += u;
+            tot += v;
+            var e = porEt[p.status] || (porEt[p.status] = { v: 0, n: 0 });
+            e.v += v;
+            e.n++;
+          });
+          var box = $("d-valor");
+          box.textContent = "";
+          var esq = el("div");
+          esq.appendChild(el("span", "rot", "Valor total estimado dos pedidos"));
+          var big = el("span", "d-total");
+          big.appendChild(el("small", null, "R$"));
+          big.appendChild(
+            document.createTextNode(
+              tot.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
+            )
+          );
+          esq.appendChild(big);
+          var nCli = Object.keys(cli).length;
+          esq.appendChild(
+            el(
+              "div",
+              "sub",
+              nPed
+                ? fmtInt(un) +
+                    " unidades em " +
+                    fmtInt(nPed) +
+                    (nPed === 1 ? " pedido" : " pedidos") +
+                    " de " +
+                    fmtInt(nCli) +
+                    (nCli === 1 ? " cliente" : " clientes") +
+                    " · média de " +
+                    fmtRs(tot / nPed) +
+                    " por pedido"
+                : "Nenhum pedido com os filtros atuais."
+            )
+          );
+          if (semP)
+            esq.appendChild(
+              el(
+                "span",
+                "aviso",
+                fmtInt(semP) +
+                  (semP === 1 ? " unidade sem preço" : " unidades sem preço") +
+                  " no catálogo não " +
+                  (semP === 1 ? "entra" : "entram") +
+                  " no valor."
+              )
+            );
+          box.appendChild(esq);
+          var et = el("div", "etapas"),
+            cores = {
+              recebido: "var(--e1)",
+              em_analise: "var(--e2)",
+              confirmado: "var(--e3)",
+              embarcado: "var(--e4)"
+            };
+          et.style.setProperty("--etapa-columns", ETAPAS_VISIVEIS.length);
+          ETAPAS_VISIVEIS.forEach(function (e) {
+            var o = porEt[e[0]] || { v: 0, n: 0 },
+              c = el("div"),
+              lab = el("span"),
+              sw = el("i");
+            sw.style.background = cores[e[0]];
+            lab.appendChild(sw);
+            lab.appendChild(document.createTextNode(e[1]));
+            c.appendChild(lab);
+            c.appendChild(el("b", null, fmtRs(o.v)));
+            c.appendChild(
+              el(
+                "small",
+                null,
+                (tot ? Math.round((o.v / tot) * 100) : 0) +
+                  "% do valor · " +
+                  fmtInt(o.n) +
+                  (o.n === 1 ? " pedido" : " pedidos")
+              )
+            );
+            et.appendChild(c);
+          });
+          box.appendChild(et);
+        }
         function renderDashboard() {
           var a = document.activeElement;
           if (a && a.classList && a.classList.contains("min")) {
@@ -8302,6 +8557,7 @@
           var d = linhasDashboard(),
             linhas = d.linhas,
             cols = d.cols;
+          renderValorDash(linhas);
           var tiles = $("d-tiles");
           tiles.textContent = "";
           [
@@ -8362,6 +8618,7 @@
             hr.appendChild(el("th", "num", c.nome));
           });
           hr.appendChild(el("th", "num tot", "Total pedido"));
+          hr.appendChild(el("th", "num", "Valor estimado"));
           hr.appendChild(el("th", "num", "Mínimo p/ importação"));
           hr.appendChild(el("th", null, "Situação"));
           th.appendChild(hr);
@@ -8378,6 +8635,15 @@
               );
             });
             tr.appendChild(el("td", "num tot", fmtInt(l.total)));
+            var tdv = el(
+              "td",
+              "num" + (l.valor ? "" : " zero"),
+              l.valor ? fmtRs(l.valor) : "-"
+            );
+            if (l.semPreco && l.total)
+              tdv.title =
+                fmtInt(l.semPreco) + " unidades sem preço no catálogo";
+            tr.appendChild(tdv);
             var tdm = el("td", "num");
             if (l.ref) {
               var inp = el("input", "min");
@@ -8495,6 +8761,7 @@
             )
             .concat([
               ["Total pedido", "i"],
+              ["Valor estimado", "r"],
               ["Mínimo para importação", "i"],
               ["Diferença", "i"],
               ["Situação", "t"]
@@ -8508,6 +8775,7 @@
               )
               .concat([
                 l.total,
+                l.valor || null,
                 l.minimo || null,
                 l.minimo ? l.total - l.minimo : null,
                 l.sit === "atingiu"
@@ -8788,18 +9056,34 @@
           /* 2. unidades por cliente */
           var g2 = $("g2");
           g2.textContent = "";
-          var pc = {};
+          var pc = {},
+            pv = {},
+            totV = 0;
           linhas.forEach(function (l) {
             Object.keys(l.porCliente).forEach(function (c) {
               pc[c] = (pc[c] || 0) + l.porCliente[c];
+              pv[c] = (pv[c] || 0) + (l.vCliente[c] || 0);
+              totV += l.vCliente[c] || 0;
             });
           });
+          var porValor = totV > 0;
+          $("g2-t").textContent = porValor
+            ? "Valor por cliente"
+            : "Unidades por cliente";
+          $("g2-s").textContent = porValor
+            ? "Valor estimado dos itens filtrados, pelo preço do catálogo."
+            : "Soma dos itens filtrados.";
           var lc = Object.keys(pc)
             .map(function (c) {
-              return { nome: nomeCliente(c), q: pc[c] };
+              return {
+                nome: nomeCliente(c),
+                u: pc[c],
+                v: pv[c] || 0,
+                q: porValor ? pv[c] || 0 : pc[c]
+              };
             })
             .filter(function (x) {
-              return x.q > 0;
+              return x.u > 0;
             })
             .sort(function (a, b) {
               return b.q - a.q;
@@ -8819,15 +9103,16 @@
               row.appendChild(el("span", "rot txt", x.nome));
               var t = el("div", "trk"),
                 b = el("i");
-              b.style.width = (x.q / mx) * 100 + "%";
+              b.style.width = (mx ? (x.q / mx) * 100 : 0) + "%";
               t.appendChild(b);
               row.appendChild(t);
-              var v = el("span", "val");
+              var v = el("span", "val"),
+                pct = tot ? Math.round((x.q / tot) * 100) : 0;
               v.innerHTML =
                 "<b>" +
-                compacto(x.q) +
+                (porValor ? esc(fmtRsCurto(x.v)) : compacto(x.u)) +
                 "</b> · " +
-                Math.round((x.q / tot) * 100) +
+                pct +
                 "%";
               row.appendChild(v);
               comTip(
@@ -8835,10 +9120,12 @@
                 "<b>" +
                   esc(x.nome) +
                   "</b><br>" +
-                  fmtInt(x.q) +
-                  " unidades (" +
-                  Math.round((x.q / tot) * 100) +
-                  "% do total)"
+                  (porValor ? esc(fmtRs(x.v)) + " · " : "") +
+                  fmtInt(x.u) +
+                  " unidades<br>" +
+                  pct +
+                  "% do " +
+                  (porValor ? "valor" : "total")
               );
               bx.appendChild(row);
             });
@@ -8852,6 +9139,7 @@
               confirmado: 0,
               embarcado: 0
             },
+            valEtapa = {},
             dia = {};
           var hoje = new Date();
           hoje.setHours(0, 0, 0, 0);
@@ -8869,12 +9157,17 @@
           pedidos.forEach(function (p) {
             if (fc && p.cliente_id !== fc) return;
             if (fs && p.status !== fs) return;
-            var u = 0;
+            var u = 0,
+              vv = 0;
             p.itens.forEach(function (i) {
-              if (vis[chaveItem(i).k]) u += i.qtd;
+              if (vis[chaveItem(i).k]) {
+                u += i.qtd;
+                vv += i.qtd * precoDe(i);
+              }
             });
             if (!u) return;
             porEtapa[p.status] = (porEtapa[p.status] || 0) + u;
+            valEtapa[p.status] = (valEtapa[p.status] || 0) + vv;
             var dt = new Date(p.criado_em);
             if (!isNaN(dt) && dt >= inicio) {
               var k = chaveDia(dt);
@@ -8938,10 +9231,12 @@
               lab.appendChild(sw);
               lab.appendChild(document.createTextNode(e[1]));
               c.appendChild(lab);
-              c.appendChild(el("b", null, fmtInt(q)));
+              c.appendChild(el("b", null, fmtInt(q) + " un"));
               c.appendChild(
-                el("span", null, Math.round((q / totE) * 100) + "%")
+                el("span", null, Math.round((q / totE) * 100) + "% das unidades")
               );
+              if (valEtapa[e[0]])
+                c.appendChild(el("span", "rs", fmtRs(valEtapa[e[0]])));
               tab.appendChild(c);
             });
             g3.appendChild(tab);

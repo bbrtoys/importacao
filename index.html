@@ -4753,17 +4753,8 @@
           var t = el("div");
           t.appendChild(el("small", null, "Pedido de"));
           t.appendChild(el("b", null, cl.nome));
-          t.appendChild(
-            el(
-              "span",
-              null,
-              cat.lojas.length
-                ? "Este pedido será dividido entre " +
-                    cat.lojas.length +
-                    (cat.lojas.length === 1 ? " loja" : " lojas")
-                : "Pedido para a loja do cliente"
-            )
-          );
+          if (!cat.lojas.length)
+            t.appendChild(el("span", null, "Pedido para a loja do cliente"));
           m.appendChild(t);
           box.appendChild(m);
         }

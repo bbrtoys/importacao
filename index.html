@@ -3393,6 +3393,19 @@
       :is(#v-dashboard, #v-pedidos) h2 { font-weight: 700; }
       #v-dashboard h3,
       #v-dashboard .d-filter-heading h3 { font-size: 1rem; font-weight: 600; }
+      /* etapas: nome e % a esquerda; unidades e valor centralizados */
+      #v-dashboard .seg-tab > div {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+        align-items: center;
+      }
+      #v-dashboard .seg-tab > div > :first-child { grid-column: 1; grid-row: 1; }
+      #v-dashboard .seg-tab > div > .pc { grid-column: 1; grid-row: 2; }
+      #v-dashboard .seg-tab > div > b,
+      #v-dashboard .seg-tab > div > .rs {
+        grid-row: 1 / 3; justify-self: center; text-align: center;
+      }
+      #v-dashboard .seg-tab > div > b { grid-column: 2; }
+      #v-dashboard .seg-tab > div > .rs { grid-column: 3; }
     </style>
   </head>
   <body>
@@ -9455,10 +9468,13 @@
               c.appendChild(lab);
               c.appendChild(el("b", null, fmtInt(q) + " un"));
               c.appendChild(
-                el("span", null, Math.round((q / totE) * 100) + "% das unidades")
+                el(
+                  "span",
+                  "pc",
+                  Math.round((q / totE) * 100) + "% das unidades"
+                )
               );
-              if (valEtapa[e[0]])
-                c.appendChild(el("span", "rs", fmtRs(valEtapa[e[0]])));
+              c.appendChild(el("span", "rs", fmtRs(valEtapa[e[0]] || 0)));
               tab.appendChild(c);
             });
             g3.appendChild(tab);

@@ -2610,12 +2610,12 @@
       .cli-topo .marca-cli {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 18px;
       }
       .cli-topo .marca-cli img {
-        width: 64px;
-        height: 64px;
-        border-radius: 14px;
+        width: 112px;
+        height: 112px;
+        border-radius: 18px;
         object-fit: contain;
         background: #fff;
         border: 1px solid var(--rule);
@@ -2627,14 +2627,16 @@
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--muted);
+        font-size: 13px;
       }
       .cli-topo .marca-cli b {
         display: block;
-        font-size: 19px;
+        font-size: 26px;
+        line-height: 1.2;
         color: var(--azul-escuro);
       }
       .cli-topo .marca-cli span {
-        font-size: 12.5px;
+        font-size: 14px;
         color: var(--muted);
       }
       .lojas-chips {
@@ -4749,7 +4751,7 @@
             im.src = urlLogo(cl.logo);
             im.alt = "Logo " + cl.nome;
             m.appendChild(im);
-          } else m.appendChild(marcaEl("", cl.nome, 64));
+          } else m.appendChild(marcaEl("", cl.nome, 112));
           var t = el("div");
           t.appendChild(el("small", null, "Pedido de"));
           t.appendChild(el("b", null, cl.nome));

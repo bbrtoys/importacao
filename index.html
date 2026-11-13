@@ -8560,8 +8560,15 @@
           renderValorDash(linhas);
           var tiles = $("d-tiles");
           tiles.textContent = "";
+          tiles.style.setProperty("--tile-columns", 6);
+          var refsChina = {};
+          cat.itens.forEach(function (c) {
+            var r = String(c.ref_china || "").trim().toUpperCase();
+            if (r) refsChina[r] = 1;
+          });
           [
-            ["Itens", linhas.length],
+            ["Itens no catálogo", Object.keys(refsChina).length],
+            ["Itens com pedido", linhas.length],
             [
               "Unidades pedidas",
               linhas.reduce(function (s, l) {

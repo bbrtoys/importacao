@@ -4114,7 +4114,7 @@
                   <input
                     id="d-busca"
                     type="search"
-                    placeholder="Código ou produto"
+                    placeholder="Código, produto ou nº do pedido"
                   />
                 </label>
               </div>
@@ -8566,6 +8566,18 @@
           var c = i.catalogo_id && cat.porId[i.catalogo_id];
           return c && c.preco ? Number(c.preco) : 0;
         }
+        // Busca do dashboard: casa com o número do pedido (todos os itens dele)
+        // ou com o código/descrição do item.
+        function passaBuscaDash(p, i) {
+          var fq = $("d-busca").value.trim().toLowerCase();
+          if (!fq) return true;
+          if (String(p.numero || "").toLowerCase().indexOf(fq) >= 0) return true;
+          return (
+            ((i.ref || "") + " " + (i.produto || ""))
+              .toLowerCase()
+              .indexOf(fq) >= 0
+          );
+        }
         function noCatalogo(i) {
           return !!(i.catalogo_id && cat.porId[i.catalogo_id]);
         }
@@ -8619,7 +8631,7 @@
           pedidos.forEach(function (p) {
             if (fs && p.status !== fs) return;
             p.itens.forEach(function (i) {
-              if (!noCatalogo(i)) return;
+              if (!noCatalogo(i) || !passaBuscaDash(p, i)) return;
               var c = chaveItem(i),
                 l = mapa[c.k];
               if (!l) {
@@ -8686,7 +8698,11 @@
             .filter(function (l) {
               if (fc && !l.porCliente[fc]) return false;
               if (fsit && l.sit !== fsit) return false;
-              if (fq && (l.ref + " " + l.produto).toLowerCase().indexOf(fq) < 0)
+              if (
+                fq &&
+                !l.total &&
+                (l.ref + " " + l.produto).toLowerCase().indexOf(fq) < 0
+              )
                 return false;
               return true;
             });
@@ -8730,7 +8746,12 @@
             var v = 0,
               u = 0;
             p.itens.forEach(function (i) {
-              if (!noCatalogo(i) || !vis[chaveItem(i).k]) return;
+              if (
+                !noCatalogo(i) ||
+                !vis[chaveItem(i).k] ||
+                !passaBuscaDash(p, i)
+              )
+                return;
               var pr = precoDe(i);
               u += i.qtd;
               v += i.qtd * pr;
@@ -9400,7 +9421,11 @@
             var u = 0,
               vv = 0;
             p.itens.forEach(function (i) {
-              if (noCatalogo(i) && vis[chaveItem(i).k]) {
+              if (
+                noCatalogo(i) &&
+                vis[chaveItem(i).k] &&
+                passaBuscaDash(p, i)
+              ) {
                 u += i.qtd;
                 vv += i.qtd * precoDe(i);
               }

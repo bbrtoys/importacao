@@ -3510,6 +3510,7 @@
       }
       .moqst.falta { color: #b45309; }
       .moqst.ok { color: #1d7a3e; }
+      .moqst.curto { max-width: 90px; font-size: 0.75rem; margin-top: 4px; white-space: nowrap; font-family: var(--body); }
     </style>
   </head>
   <body>
@@ -6611,13 +6612,24 @@
           }
           return Math.max(0, base) + qtdTotal(c.id);
         }
-        function moqEl(c) {
+        function moqNaColuna() {
+          return cat.cols.some(function (x) {
+            return x[0] === "moq";
+          });
+        }
+        function moqEl(c, curto) {
           if (!(c.moq > 0) || !cat.totais) return null;
           var tot = unidadesTotaisItem(c),
             falta = c.moq - tot,
-            sp = el("span", "moqst " + (falta > 0 ? "falta" : "ok"));
-          sp.textContent =
-            falta > 0
+            sp = el(
+              "span",
+              "moqst " + (falta > 0 ? "falta" : "ok") + (curto ? " curto" : "")
+            );
+          sp.textContent = curto
+            ? falta > 0
+              ? "Falta " + fmtInt(falta) + " un"
+              : "✓ Atingido"
+            : falta > 0
               ? "Faltam " + fmtInt(falta) + " un para o MOQ"
               : "✓ MOQ atingido";
           sp.title =
@@ -6707,6 +6719,10 @@
             var t = textoCel(c, k),
               cls = COLS_LARGAS[k] ? "w" : COLS_NUM[k] ? "n" : "nw",
               tdc = el("td", cls + (t ? "" : " vazio"), t || "-");
+            if (k === "moq") {
+              var mqc = moqEl(c, true);
+              if (mqc) tdc.appendChild(mqc);
+            }
             if (!dupPosto && (k === "ref_china" || k === "descricao")) {
               var bdu = botaoDup(c);
               if (bdu) {
@@ -6747,7 +6763,7 @@
               td.classList.add(ds.querySelector(".fora") ? "q-bad" : "q-ok");
             td.appendChild(bm);
             td.appendChild(ds);
-            var mqm = moqEl(c);
+            var mqm = moqNaColuna() ? null : moqEl(c);
             if (mqm) td.appendChild(mqm);
             var bpm = botaoPrio(c, q);
             if (bpm) td.appendChild(bpm);
@@ -6759,7 +6775,7 @@
           } else {
             var tq = el("td", "qtd");
             campo(tq, null);
-            var mqs = moqEl(c);
+            var mqs = moqNaColuna() ? null : moqEl(c);
             if (mqs) tq.appendChild(mqs);
             var bps = botaoPrio(c, q);
             if (bps) tq.appendChild(bps);
@@ -6875,7 +6891,7 @@
           var bpr = tr.querySelector("button.prio");
           if (bpr) bpr.hidden = !(tot > 0);
           var mqa = tr.querySelector(".moqst"),
-            mqn = mqa && moqEl(c);
+            mqn = mqa && moqEl(c, mqa.classList.contains("curto"));
           if (mqa && mqn) mqa.replaceWith(mqn);
           var tl = tr.querySelector("td.tot-l");
           if (tl) {

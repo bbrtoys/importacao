@@ -3432,6 +3432,23 @@
       .pn-prio { color: #d9661f; font-weight: 700; margin-left: 6px; }
       #t-prio { margin: 0; }
       #t-prio b { color: #9a4a12; }
+      /* edição de pedido */
+      .edit-banner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px 16px;
+        margin: 0;
+        padding: 14px 18px;
+        border-radius: 12px;
+        background: #fff4e5;
+        border: 1px solid #f3cf9a;
+        color: #6b3d00;
+      }
+      .edit-banner[hidden] { display: none; }
+      .edit-banner b { color: #4a2a00; }
+      .edit-banner small { display: block; margin-top: 4px; color: #7a5a2a; }
     </style>
   </head>
   <body>
@@ -3739,8 +3756,19 @@
           <div class="novo-grid">
             <form class="sheet" id="form" novalidate>
               <div class="strip">
-                <span>Novo pedido</span>
+                <span id="f-titulo">Novo pedido</span>
                 <span>Data <b id="f-data"></b></span>
+              </div>
+              <div class="block" id="edit-box" hidden>
+                <div class="edit-banner" role="status">
+                  <div>
+                    <b id="edit-txt"></b>
+                    <small id="edit-sub"></small>
+                  </div>
+                  <button type="button" class="btn small" id="edit-cancelar">
+                    Cancelar edição
+                  </button>
+                </div>
               </div>
               <div class="block" id="bloco-cliente" hidden>
                 <h2>Cliente</h2>
@@ -5137,10 +5165,9 @@
         function renderCliTopo() {
           var box = $("cli-topo");
           box.textContent = "";
-          var cl =
-            perfil && perfil.papel === "cliente"
-              ? clientePorId(perfil.cliente_id)
-              : null;
+          var cl = clienteDoFormulario()
+            ? clientePorId(clienteDoFormulario())
+            : null;
           if (!cl) {
             box.hidden = true;
             return;
@@ -5268,7 +5295,7 @@
           document.querySelectorAll("#form .invalid").forEach(function (n) {
             n.classList.remove("invalid");
           });
-          if (perfil.papel !== "cliente")
+          if (!cat.edit && perfil.papel !== "cliente")
             erros.push("Os pedidos são enviados pelos usuários dos clientes.");
           var inc = 0;
           if (inc)
@@ -5316,6 +5343,10 @@
             return;
           }
           er.hidden = true;
+          if (cat.edit) {
+            salvarEdicao();
+            return;
+          }
           var itens = itensCatalogo().concat(itensValidos()),
             btn = $("enviar"),
             btn2 = $("enviar-lado");
@@ -5350,6 +5381,154 @@
           salvarRascunhoCat();
           renderCatalogo();
           mostrarRecibo(ultimo);
+        });
+
+        /* ================= EDIÇÃO DE PEDIDO ================= */
+        // Admin e BBR Toys editam qualquer pedido; o cliente só os que ele
+        // mesmo enviou e enquanto estiverem em "Recebido". O banco confere
+        // as mesmas regras na função editar_pedido.
+        function podeEditar(p) {
+          if (!bancoAtualizado || !perfil) return false;
+          if (interno()) return true;
+          return (
+            perfil.papel === "cliente" &&
+            p.criado_por === perfil.id &&
+            p.status === "recebido"
+          );
+        }
+        function entrarEdicao(p) {
+          if (!cat.itens.length) {
+            msg(
+              $("p-erro"),
+              "warn",
+              "Aguarde o catálogo terminar de carregar para editar o pedido."
+            );
+            return;
+          }
+          if (!cat.edit) salvarRascunhoCat();
+          cat.edit = {
+            id: p.id,
+            numero: p.numero,
+            cliente_id: p.cliente_id,
+            manter: []
+          };
+          cat.lojas = multiLojas();
+          var lojaOk = {};
+          cat.lojas.forEach(function (l) {
+            lojaOk[l.id] = 1;
+          });
+          cat.qtd = {};
+          cat.prio = {};
+          p.itens.forEach(function (i) {
+            var c = i.catalogo_id && cat.porId[i.catalogo_id],
+              lojaValida = cat.lojas.length
+                ? !!(i.loja_id && lojaOk[i.loja_id])
+                : !i.loja_id;
+            if (!c || !lojaValida) {
+              cat.edit.manter.push(i);
+              return;
+            }
+            var k = chaveQ(c.id, cat.lojas.length ? i.loja_id : null);
+            cat.qtd[k] = (cat.qtd[k] || 0) + i.qtd;
+            if (i.prioridade) cat.prio[c.id] = true;
+          });
+          st.obs = p.obs || "";
+          $("obs").value = st.obs;
+          cat.so = false;
+          cat.busca = "";
+          cat.filtros = {};
+          $("cat-busca").value = "";
+          $("form").hidden = false;
+          $("recibo").hidden = true;
+          atualizarModoEdicao();
+          renderCliTopo();
+          renderCatalogo();
+          if (location.hash !== "#novo") location.hash = "#novo";
+          else rota();
+          window.scrollTo(0, 0);
+        }
+        function sairEdicao() {
+          cat.edit = null;
+          cat.lojas = multiLojas();
+          carregarRascunhoCat();
+          st.obs = "";
+          $("obs").value = "";
+          $("erro").hidden = true;
+          atualizarModoEdicao();
+          renderCliTopo();
+          renderCatalogo();
+        }
+        function atualizarModoEdicao() {
+          var ed = cat.edit,
+            podeEnviar = perfil.papel === "cliente";
+          $("edit-box").hidden = !ed;
+          $("f-titulo").textContent = ed
+            ? "Editando o pedido " + ed.numero
+            : "Novo pedido";
+          $("t-novo").textContent = ed ? "Editando " + ed.numero : "Novo pedido";
+          ["enviar", "enviar-lado"].forEach(function (id) {
+            $(id).textContent = ed ? "Salvar alterações" : "Enviar pedido";
+            $(id).hidden = !(ed || podeEnviar);
+          });
+          $("limpar").hidden = $("limpar-lado").hidden = !!ed;
+          if (!ed) return;
+          $("edit-txt").textContent =
+            "Editando o pedido " +
+            ed.numero +
+            " de " +
+            nomeCliente(ed.cliente_id) +
+            ". Ajuste as quantidades e clique em Salvar alterações.";
+          var n = ed.manter.length;
+          $("edit-sub").textContent = n
+            ? fmtInt(n) +
+              (n === 1
+                ? " linha do pedido não aparece no catálogo (item fora do catálogo ou loja desativada) e será mantida como está."
+                : " linhas do pedido não aparecem no catálogo (item fora do catálogo ou loja desativada) e serão mantidas como estão.")
+            : "Seu rascunho de novo pedido fica guardado e volta quando você terminar.";
+        }
+        async function salvarEdicao() {
+          var ed = cat.edit,
+            er = $("erro"),
+            btn = $("enviar"),
+            btn2 = $("enviar-lado");
+          var itens = itensCatalogo().concat(
+            ed.manter.map(function (i) {
+              var x = {
+                ref: i.ref || "",
+                produto: i.produto || "",
+                qtd: i.qtd
+              };
+              if (i.catalogo_id) x.catalogo_id = i.catalogo_id;
+              if (i.loja_id) x.loja_id = i.loja_id;
+              if (i.prioridade) x.prioridade = true;
+              return x;
+            })
+          );
+          btn.disabled = btn2.disabled = true;
+          btn.textContent = btn2.textContent = "Salvando…";
+          var r = await sb.rpc("editar_pedido", {
+            p_pedido: ed.id,
+            p_obs: (st.obs || "").trim(),
+            p_itens: itens
+          });
+          btn.disabled = btn2.disabled = false;
+          btn.textContent = btn2.textContent = "Salvar alterações";
+          if (r.error) {
+            msg(er, "bad", "As alterações não foram salvas: " + traduz(r.error));
+            er.scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          }
+          var id = ed.id,
+            numero = ed.numero;
+          sairEdicao();
+          abertos[id] = true;
+          avisoPedidos = "Pedido " + numero + " atualizado.";
+          if (location.hash === "#pedidos") carregarPedidos();
+          else location.hash = "#pedidos";
+        }
+        $("edit-cancelar").addEventListener("click", function () {
+          sairEdicao();
+          location.hash = "#pedidos";
         });
 
         /* ================= LOGOS E LOJAS ================= */
@@ -5537,9 +5716,14 @@
             });
           } catch (e) {}
         }
+        function clienteDoFormulario() {
+          if (cat.edit) return cat.edit.cliente_id;
+          return perfil && perfil.papel === "cliente" ? perfil.cliente_id : null;
+        }
         function multiLojas() {
-          if (!perfil || perfil.papel !== "cliente") return [];
-          var cl = clientePorId(perfil.cliente_id);
+          var cid = clienteDoFormulario();
+          if (!cid) return [];
+          var cl = clientePorId(cid);
           return cl && cl.multiloja ? lojasDoCliente(cl.id) : [];
         }
         function chaveQ(id, loja) {
@@ -7604,8 +7788,13 @@
           ultimaCarga = new Date();
           return true;
         }
+        var avisoPedidos = null;
         async function carregarPedidos() {
           if (await carregarDados($("p-erro"))) renderPainel();
+          if (avisoPedidos) {
+            msg($("p-erro"), "ok", avisoPedidos);
+            avisoPedidos = null;
+          }
         }
         function filtrados(semCat) {
           var c = $("fil-cliente").value,
@@ -8094,6 +8283,14 @@
                 renderPainel();
               });
               a.appendChild(sel);
+            }
+            if (podeEditar(p)) {
+              var be = el("button", "btn small primary", "Editar pedido");
+              be.type = "button";
+              be.addEventListener("click", function () {
+                entrarEdicao(p);
+              });
+              a.appendChild(be);
             }
             var bc = el("button", "btn small", "Copiar");
             bc.type = "button";

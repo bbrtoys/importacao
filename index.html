@@ -7720,6 +7720,12 @@
                 ". " +
                 (i.ref ? "[" + i.ref + "] " : "") +
                 (i.produto || "(sem descrição)") +
+                (function () {
+                  var c = i.catalogo_id && cat.porId[i.catalogo_id];
+                  return c && cat.grupoDe && cat.grupoDe[c.id]
+                    ? " (showroom " + nomeShowroom(c) + ")"
+                    : "";
+                })() +
                 " | " +
                 fmtInt(i.qtd) +
                 " un" +
@@ -7919,6 +7925,7 @@
             ["Etapa", "t"],
             ["Item", "i"],
             ["Código", "t"],
+            ["Showroom", "t"],
             ["Produto", "t"],
             ["Categoria", "t"],
             ["Loja", "t"],
@@ -7947,6 +7954,7 @@
                 etapaNome(p.status),
                 k + 1,
                 i.ref,
+                c ? (c.showroom || "").trim() : "",
                 i.produto,
                 c ? catDe(c) : "",
                 lj ? lj.nome : "",
@@ -8485,7 +8493,14 @@
               }
               ti.appendChild(im);
               row.appendChild(ti);
-              row.appendChild(el("td", "nw", i.ref || "-"));
+              var tdr = el("td", "nw", i.ref || "-");
+              if (c && cat.grupoDe && cat.grupoDe[c.id]) {
+                var sws = el("small", "pill", "Showroom " + nomeShowroom(c));
+                sws.style.display = "block";
+                sws.style.marginTop = "4px";
+                tdr.appendChild(sws);
+              }
+              row.appendChild(tdr);
               row.appendChild(el("td", "w", i.produto || ""));
               row.appendChild(el("td", null, catItem(i)));
               if (temPrio) {

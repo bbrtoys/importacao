@@ -3497,6 +3497,19 @@
       table.dup-tab .op .preco em.caro { color: #a33628; }
       #v-dashboard .d-acoes-det { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
       #d-tabela.sem-prod :is(th.col-prod, td.prod) { display: none; }
+      /* quanto falta para o MOQ (soma de todos os clientes) */
+      .moqst {
+        display: block;
+        margin: 5px auto 0;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        line-height: 1.3;
+        white-space: normal;
+        max-width: 140px;
+        text-align: center;
+      }
+      .moqst.falta { color: #b45309; }
+      .moqst.ok { color: #1d7a3e; }
     </style>
   </head>
   <body>
@@ -5445,6 +5458,7 @@
           cat.prio = {};
           salvarRascunhoCat();
           renderCatalogo();
+          carregarTotaisMoq();
           mostrarRecibo(ultimo);
         });
 
@@ -5481,8 +5495,15 @@
             id: p.id,
             numero: p.numero,
             cliente_id: p.cliente_id,
-            manter: []
+            manter: [],
+            orig: {},
+            manterQ: {}
           };
+          p.itens.forEach(function (i) {
+            if (i.catalogo_id)
+              cat.edit.orig[i.catalogo_id] =
+                (cat.edit.orig[i.catalogo_id] || 0) + i.qtd;
+          });
           cat.lojas = multiLojas();
           var lojaOk = {};
           cat.lojas.forEach(function (l) {
@@ -5497,6 +5518,9 @@
                 : !i.loja_id;
             if (!c || !lojaValida) {
               cat.edit.manter.push(i);
+              if (i.catalogo_id)
+                cat.edit.manterQ[i.catalogo_id] =
+                  (cat.edit.manterQ[i.catalogo_id] || 0) + i.qtd;
               return;
             }
             var k = chaveQ(c.id, cat.lojas.length ? i.loja_id : null);
@@ -5608,6 +5632,7 @@
           sairEdicao();
           abertos[id] = true;
           avisoPedidos = "Pedido " + numero + " atualizado.";
+          carregarTotaisMoq();
           if (location.hash === "#pedidos") carregarPedidos();
           else location.hash = "#pedidos";
         }
@@ -5921,6 +5946,7 @@
           cat.lojas = multiLojas();
           renderCliTopo();
           renderCatalogo();
+          carregarTotaisMoq();
           if (
             typeof visao !== "undefined" &&
             visao === "pedidos" &&
@@ -6559,6 +6585,49 @@
         $("dlg-dup").addEventListener("click", function (e) {
           if (e.target === this) this.close();
         });
+        // Unidades já pedidas por item, somando todos os clientes (função
+        // unidades_por_item de sql/unidades-por-item-moq.sql). Sem o SQL, o
+        // aviso de MOQ não aparece.
+        async function carregarTotaisMoq() {
+          var t = null;
+          try {
+            var r = await sb.rpc("unidades_por_item");
+            if (!r.error && Array.isArray(r.data)) {
+              t = {};
+              r.data.forEach(function (x) {
+                t[x.catalogo_id] = Number(x.unidades) || 0;
+              });
+            }
+          } catch (e) {}
+          cat.totais = t;
+          if (cat.itens.length && $("cat-corpo")) recriarLinhas();
+        }
+        function unidadesTotaisItem(c) {
+          var base = (cat.totais && cat.totais[c.id]) || 0;
+          if (cat.edit) {
+            // o pedido em edição entra pelo que está no formulário, não pelo banco
+            base -= (cat.edit.orig && cat.edit.orig[c.id]) || 0;
+            base += (cat.edit.manterQ && cat.edit.manterQ[c.id]) || 0;
+          }
+          return Math.max(0, base) + qtdTotal(c.id);
+        }
+        function moqEl(c) {
+          if (!(c.moq > 0) || !cat.totais) return null;
+          var tot = unidadesTotaisItem(c),
+            falta = c.moq - tot,
+            sp = el("span", "moqst " + (falta > 0 ? "falta" : "ok"));
+          sp.textContent =
+            falta > 0
+              ? "Faltam " + fmtInt(falta) + " un para o MOQ"
+              : "✓ MOQ atingido";
+          sp.title =
+            "MOQ " +
+            fmtInt(c.moq) +
+            " un. Já pedido somando todos os clientes, com este pedido: " +
+            fmtInt(tot) +
+            " un.";
+          return sp;
+        }
         function botaoPrio(c, q) {
           if (!bancoAtualizado) return null;
           var on = !!(cat.prio && cat.prio[c.id]),
@@ -6678,6 +6747,8 @@
               td.classList.add(ds.querySelector(".fora") ? "q-bad" : "q-ok");
             td.appendChild(bm);
             td.appendChild(ds);
+            var mqm = moqEl(c);
+            if (mqm) td.appendChild(mqm);
             var bpm = botaoPrio(c, q);
             if (bpm) td.appendChild(bpm);
             tr.appendChild(td);
@@ -6688,6 +6759,8 @@
           } else {
             var tq = el("td", "qtd");
             campo(tq, null);
+            var mqs = moqEl(c);
+            if (mqs) tq.appendChild(mqs);
             var bps = botaoPrio(c, q);
             if (bps) tq.appendChild(bps);
             tr.appendChild(tq);
@@ -6801,6 +6874,9 @@
           tr.className = tot > 0 ? "tem" : "";
           var bpr = tr.querySelector("button.prio");
           if (bpr) bpr.hidden = !(tot > 0);
+          var mqa = tr.querySelector(".moqst"),
+            mqn = mqa && moqEl(c);
+          if (mqa && mqn) mqa.replaceWith(mqn);
           var tl = tr.querySelector("td.tot-l");
           if (tl) {
             tl.classList.toggle("q-ok", tot > 0);
@@ -10535,6 +10611,7 @@
             );
           });
           if (h === "pedidos") carregarPedidos();
+          if (h === "novo") carregarTotaisMoq();
           if (h === "dashboard") carregarDashboard();
           if (h === "usuarios") {
             ajustarNovoUsuario();

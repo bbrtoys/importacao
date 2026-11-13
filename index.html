@@ -7636,6 +7636,10 @@
           return grupos;
         }
         function renderResumoPedidos(lista) {
+          // Internos veem esses totais na aba Dashboard; o resumo fica so para o cliente.
+          var resumo = document.querySelector("#v-pedidos .p-summary");
+          if (resumo) resumo.style.display = interno() ? "none" : "";
+          if (interno()) return;
           var grupos = resumoPedidos(lista);
           ["tiles", "p-valores"].forEach(function (id) {
             var box = $(id), monetario = id === "p-valores";

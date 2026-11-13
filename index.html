@@ -3885,9 +3885,9 @@
                 >
               </div>
               <div class="hint">
-                Os itens são somados pelo código. O mínimo para importação é
-                o MOQ da planilha do catálogo; MOQ em branco conta como sem
-                mínimo.
+                Só entram os produtos do catálogo importado, somados pelo
+                código. O mínimo para importação é o MOQ da planilha; MOQ em
+                branco conta como sem mínimo.
               </div>
               <div class="msg bad" id="d-erro" hidden></div>
             </div>
@@ -8295,6 +8295,9 @@
             );
           return fmtRs(v);
         }
+        function noCatalogo(i) {
+          return !!(i.catalogo_id && cat.porId[i.catalogo_id]);
+        }
         function moqPorRef() {
           var m = {};
           cat.itens.forEach(function (c) {
@@ -8345,6 +8348,7 @@
           pedidos.forEach(function (p) {
             if (fs && p.status !== fs) return;
             p.itens.forEach(function (i) {
+              if (!noCatalogo(i)) return;
               var c = chaveItem(i),
                 l = mapa[c.k];
               if (!l) {
@@ -8455,7 +8459,7 @@
             var v = 0,
               u = 0;
             p.itens.forEach(function (i) {
-              if (!vis[chaveItem(i).k]) return;
+              if (!noCatalogo(i) || !vis[chaveItem(i).k]) return;
               var pr = precoDe(i);
               u += i.qtd;
               v += i.qtd * pr;
@@ -9121,7 +9125,7 @@
             var u = 0,
               vv = 0;
             p.itens.forEach(function (i) {
-              if (vis[chaveItem(i).k]) {
+              if (noCatalogo(i) && vis[chaveItem(i).k]) {
                 u += i.qtd;
                 vv += i.qtd * precoDe(i);
               }

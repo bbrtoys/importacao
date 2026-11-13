@@ -3175,6 +3175,138 @@
             border-color 0.12s;
         }
       }
+      /* Dashboard: hierarquia de indicadores e painéis inspirada nas referências visuais. */
+      #v-dashboard {
+        --e1: #86b6ef;
+        --e2: #3987e5;
+        --e3: #1c5cab;
+        --e4: #0d366b;
+      }
+      #v-dashboard .d-shell {
+        background: #f4f7fb;
+        border: 1px solid #dce5ef;
+        border-radius: 22px;
+        overflow: hidden;
+      }
+      #v-dashboard .block { border-bottom: 0; padding: 26px; gap: 20px; }
+      #v-dashboard .d-heading { align-items: center; gap: 20px; }
+      #v-dashboard .d-eyebrow {
+        display: block; color: var(--azul); font-size: 10px;
+        font-weight: 600; letter-spacing: .14em; margin-bottom: 7px;
+      }
+      #v-dashboard h2 {
+        font-size: clamp(22px, 2.2vw, 30px); letter-spacing: -.04em;
+        text-transform: none; color: #152f48; line-height: 1.25;
+      }
+      #v-dashboard .d-heading p { color: #5b6c7d; margin: 8px 0 0; font-size: 12px; }
+      #v-dashboard .d-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+      #v-dashboard .d-actions .btn { background: var(--azul-escuro); color: #fff; border-color: var(--azul-escuro); }
+      #v-dashboard .d-actions .btn:hover { background: var(--azul); }
+      #v-dashboard .live { font-size: 11px; }
+      #v-dashboard .d-filter-panel {
+        background: #fff; border: 1px solid #e0e7ef; border-radius: 14px;
+        padding: 16px 20px; display: flex; flex-direction: column; gap: 12px;
+      }
+      #v-dashboard .d-filter-heading, #v-dashboard .d-section-heading {
+        display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      }
+      #v-dashboard h3 { margin: 0; font-size: 14px; font-weight: 600; color: #243e55; }
+      #v-dashboard .d-filter-heading h3 { font-size: 12px; }
+      #v-dashboard .d-clear { padding: 4px 8px; font-size: 11px; background: transparent; color: var(--azul-escuro); border-color: transparent; box-shadow: none; }
+      #v-dashboard .d-clear:hover { background: var(--azul-soft); }
+      #v-dashboard .filters { gap: 16px; }
+      #v-dashboard .filters label { font-size: 10px; letter-spacing: .04em; color: #53677a; }
+      #v-dashboard .filters input, #v-dashboard .filters select {
+        margin-top: 5px; background: #f8fafc; border-color: #dce4ed;
+        border-radius: 8px; min-height: 40px; font-size: 12px;
+      }
+      #v-dashboard .check label { font-size: 11px; }
+      #v-dashboard .d-valor {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+        background: transparent; color: var(--ink); padding: 0;
+        border-radius: 0; gap: 14px; align-items: stretch;
+      }
+      #v-dashboard .d-valor > div:first-child {
+        background: #0d406a; color: #fff; border-radius: 14px;
+        padding: 22px 24px; border: 1px solid #0d406a;
+      }
+      #v-dashboard .d-valor .rot { font-size: 10px; letter-spacing: .06em; }
+      #v-dashboard .d-total { font-size: clamp(26px, 2.8vw, 40px); letter-spacing: -.04em; margin: 10px 0; }
+      #v-dashboard .d-valor .sub { font-size: 11px; line-height: 1.7; color: #d8e7f4; }
+      #v-dashboard .d-valor .etapas { gap: 14px; }
+      #v-dashboard .d-valor .etapas > div {
+        display: flex; flex-direction: column; justify-content: center;
+        background: #fff; border: 1px solid #e0e7ef; border-radius: 14px; padding: 18px;
+      }
+      #v-dashboard .d-valor .etapas span { font-size: 11px; color: #53677a; }
+      #v-dashboard .d-valor .etapas b { color: #173b5a; font-size: clamp(16px, 1.5vw, 22px); margin: 12px 0 6px; letter-spacing: -.04em; }
+      #v-dashboard .d-valor .etapas small { color: #5b6c7d; font-size: 10px; opacity: 1; }
+      #v-dashboard .tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+      #v-dashboard .tile {
+        margin: 0; align-items: flex-start; padding: 17px 18px;
+        border: 1px solid #e0e7ef; border-radius: 12px; background: #fff; gap: 8px;
+      }
+      #v-dashboard .tile span {
+        padding: 0; margin: 0; background: none; box-shadow: none; border-radius: 0;
+        color: #53677a; font-size: 10px; text-transform: none; letter-spacing: 0; text-align: left;
+      }
+      #v-dashboard .tile b { color: #173b5a; font-size: clamp(22px, 2vw, 30px); font-weight: 600; line-height: 1.15; overflow-wrap: anywhere; }
+      #v-dashboard .tile small { font-size: 10px; color: #68798a; }
+      #v-dashboard .tile.d-kpi-ok { background: #eef5fc; border-color: #d4e4f5; }
+      #v-dashboard .tile.d-kpi-warn { background: #fff2ef; border-color: #f0d9d3; }
+      #v-dashboard .tile.d-kpi-warn b { color: #a33628; }
+      #v-dashboard .d-method { color: #586b7d; font-size: 11px; }
+      #v-dashboard .d-method summary { cursor: pointer; width: fit-content; }
+      #v-dashboard .d-method .hint { padding-top: 10px; max-width: 900px; font-size: 11px; }
+      #v-dashboard .d-analysis { padding-top: 0; }
+      #v-dashboard .d-section-heading > span, #v-dashboard .d-section-heading div > span { font-size: 11px; color: #68798a; }
+      #v-dashboard .graficos { gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+      #v-dashboard .graf { padding: 22px; background: #fff; border-color: #e0e7ef; border-radius: 14px; gap: 14px; }
+      #v-dashboard .graf .sub { line-height: 1.6; font-size: 11px; color: #68798a; }
+      #v-dashboard .graf .vazio { padding: 32px 16px; background: #f8fafc; border-radius: 8px; }
+      #v-dashboard .hb { gap: 10px; }
+      #v-dashboard .hb-row { grid-template-columns: minmax(60px, 100px) minmax(40px, 1fr) minmax(100px, auto); font-size: 11px; padding: 4px 0; }
+      #v-dashboard .escala { grid-template-columns: minmax(60px, 100px) minmax(40px, 1fr) minmax(100px, auto); }
+      #v-dashboard #g1, #v-dashboard #g2 { max-height: 430px; overflow-y: auto; padding: 3px; }
+      #v-dashboard .seg-tab { grid-template-columns: 1fr; gap: 0; }
+      #v-dashboard .seg-tab > div { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; padding: 12px 0; border: 0; border-top: 1px solid #edf1f5; border-radius: 0; background: transparent; }
+      #v-dashboard .seg-tab b { text-align: right; font-size: 17px; color: #173b5a; }
+      #v-dashboard .seg-tab .rs { text-align: right; }
+      #v-dashboard #g4 { margin: auto 0; overflow-x: auto; }
+      #v-dashboard .colsvg { min-width: 460px; }
+      #v-dashboard .d-detail { margin: 0 26px 26px; background: #fff; border: 1px solid #e0e7ef; border-radius: 14px; overflow: hidden; }
+      #v-dashboard .d-detail .d-section-heading { padding: 20px 22px; }
+      #v-dashboard .d-count { padding: 5px 10px; background: #edf4fb; border-radius: 6px; white-space: nowrap; }
+      #v-dashboard .dash th { background: #edf2f7; color: #425c72; font-size: 10px; padding: 13px 14px; }
+      #v-dashboard .dash td { padding: 14px; font-size: 12px; border-bottom-color: #edf1f5; }
+      #v-dashboard .dash tbody tr:hover { background: #f6f9fc; }
+      #v-dashboard .d-detail + .block { display: none; }
+      #v-dashboard :focus-visible { outline: 2px solid var(--azul); outline-offset: 3px; }
+      @media (max-width: 1100px) {
+        #v-dashboard .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        #v-dashboard .d-valor { grid-template-columns: 1fr; }
+        #v-dashboard .d-valor .etapas > div { padding: 16px; }
+        #v-dashboard .graficos { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 600px) {
+        #v-dashboard .block { padding: 18px 14px; gap: 16px; }
+        #v-dashboard .d-heading { align-items: flex-start; }
+        #v-dashboard .d-actions { align-items: flex-start; width: 100%; flex-direction: row; flex-wrap: wrap; justify-content: space-between; }
+        #v-dashboard .d-filter-panel { padding: 14px; }
+        #v-dashboard .filters { gap: 12px; }
+        #v-dashboard .filters label { flex-basis: 100%; min-width: 0; }
+        #v-dashboard .d-valor .etapas { grid-template-columns: 1fr; gap: 10px; }
+        #v-dashboard .d-valor .etapas > div { padding: 14px 16px; }
+        #v-dashboard .d-valor .etapas b { margin: 6px 0; font-size: 20px; }
+        #v-dashboard .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        #v-dashboard .tile { padding: 14px; }
+        #v-dashboard .d-analysis { padding-top: 0; }
+        #v-dashboard .graf { padding: 16px 12px; }
+        #v-dashboard .hb-row, #v-dashboard .escala { grid-template-columns: 64px minmax(25px, 1fr) minmax(90px, auto); gap: 6px; font-size: 10px; }
+        #v-dashboard .d-detail { margin: 0 14px 18px; }
+        #v-dashboard .d-detail .d-section-heading { padding: 16px; }
+        #v-dashboard .d-section-heading { flex-wrap: wrap; }
+      }
     </style>
   </head>
   <body>
@@ -3832,16 +3964,26 @@
 
         <!-- ---------- DASHBOARD DE ITENS ---------- -->
         <section id="v-dashboard" hidden>
-          <div class="sheet">
-            <div class="block">
-              <div class="send">
-                <h2>Dashboard de itens</h2>
+          <div class="sheet d-shell">
+            <div class="block d-overview">
+              <div class="send d-heading">
+                <div>
+                  <span class="d-eyebrow">IMPORTAÇÃO · VISÃO GERAL</span>
+                  <h2>Dashboard de itens</h2>
+                  <p>Acompanhe os pedidos e o avanço de cada item até o mínimo de importação.</p>
+                </div>
+                <div class="d-actions">
                 <span class="live" id="d-vivo"
                   ><i></i><span id="d-vivo-txt">Conectando…</span></span
                 >
+                <button type="button" class="btn" id="d-baixar">Baixar Excel</button>
+                </div>
               </div>
-              <div class="d-valor" id="d-valor"></div>
-              <div class="tiles" id="d-tiles"></div>
+              <div class="d-filter-panel">
+              <div class="d-filter-heading">
+                <h3>Filtrar carteira</h3>
+                <button type="button" class="btn d-clear" id="d-limpar">Limpar filtros</button>
+              </div>
               <div class="filters">
                 <label for="d-cliente"
                   >Cliente
@@ -3872,9 +4014,6 @@
                     placeholder="Código ou produto"
                   />
                 </label>
-                <button type="button" class="btn" id="d-baixar">
-                  Baixar (Excel)
-                </button>
               </div>
               <div class="check">
                 <input type="checkbox" id="d-sempedido" /><label
@@ -3884,16 +4023,28 @@
                   têm pedido</label
                 >
               </div>
-              <div class="hint">
-                Só entram os produtos do catálogo importado, somados pelo
-                código. O mínimo para importação é o MOQ da planilha; MOQ em
-                branco conta como sem mínimo.
               </div>
               <div class="msg bad" id="d-erro" hidden></div>
+              <div class="d-valor" id="d-valor"></div>
+              <div class="tiles" id="d-tiles"></div>
+              <details class="d-method">
+                <summary>Como os indicadores são calculados</summary>
+                <div class="hint">
+                Só entram os produtos do catálogo importado, somados pelo
+                código. O mínimo para importação é o MOQ da planilha; MOQ em
+                branco conta como sem mínimo. “Itens no catálogo” considera o
+                catálogo completo; os demais indicadores acompanham os filtros.
+                Os valores são estimados pelo preço do catálogo.
+                </div>
+              </details>
             </div>
-            <div class="block">
+            <div class="block d-analysis">
+              <div class="d-section-heading">
+                <h3>Análise da carteira</h3>
+                <span>Dos itens aos pedidos</span>
+              </div>
               <div class="graficos" id="d-graficos">
-                <section class="graf largo" aria-labelledby="g1-t">
+                <section class="graf" aria-labelledby="g1-t">
                   <h3 id="g1-t">Cobertura do mínimo por item</h3>
                   <div class="sub" id="g1-s">
                     Quanto do mínimo para importação já foi pedido. Os itens
@@ -3924,7 +4075,7 @@
                   </div>
                   <div id="g3"></div>
                 </section>
-                <section class="graf largo" aria-labelledby="g4-t">
+                <section class="graf" aria-labelledby="g4-t">
                   <h3 id="g4-t">Entrada de unidades por dia</h3>
                   <div class="sub" id="g4-s">
                     Últimos 30 dias, pela data do pedido.
@@ -3933,7 +4084,13 @@
                 </section>
               </div>
             </div>
-            <div class="scroll"><table class="dash" id="d-tabela"></table></div>
+            <div class="d-detail">
+              <div class="d-section-heading">
+                <div><h3>Detalhamento dos itens</h3><span>Quantidades, valores e mínimo por produto</span></div>
+                <span class="d-count" id="d-contagem" aria-live="polite"></span>
+              </div>
+              <div class="scroll" role="region" aria-label="Detalhamento dos itens; role horizontalmente para ver todas as colunas" tabindex="0"><table class="dash" id="d-tabela"></table></div>
+            </div>
             <div class="block">
               <details class="lote" hidden style="display: none">
                 <summary>Cadastrar mínimos em lote</summary>
@@ -8574,45 +8731,47 @@
             if (r) refsChina[r] = 1;
           });
           [
-            ["Itens no catálogo", Object.keys(refsChina).length],
+            ["Itens no catálogo", Object.keys(refsChina).length, "Catálogo completo"],
             [
               "Itens com pedido",
               linhas.filter(function (l) {
                 return l.total > 0;
-              }).length
+              }).length, "Com os filtros atuais"
             ],
             [
               "Unidades pedidas",
               linhas.reduce(function (s, l) {
                 return s + l.total;
-              }, 0)
+              }, 0), "Volume solicitado"
             ],
             [
               "Atingiram o mínimo",
               linhas.filter(function (l) {
                 return l.sit === "atingiu";
-              }).length
+              }).length, "MOQ alcançado", "d-kpi-ok"
             ],
             [
               "Abaixo do mínimo",
               linhas.filter(function (l) {
                 return l.sit === "abaixo";
-              }).length
+              }).length, "Precisam de atenção", "d-kpi-warn"
             ],
             [
               "Sem MOQ",
               linhas.filter(function (l) {
                 return l.sit === "semmin";
-              }).length
+              }).length, "Mínimo não informado"
             ]
           ].forEach(function (t) {
-            var x = el("div", "tile");
+            var x = el("div", "tile" + (t[3] ? " " + t[3] : ""));
             x.appendChild(el("span", null, t[0]));
             x.appendChild(el("b", null, fmtInt(t[1])));
+            x.appendChild(el("small", null, t[2]));
             tiles.appendChild(x);
           });
 
           renderGraficos(d);
+          $("d-contagem").textContent = fmtInt(linhas.length) + (linhas.length === 1 ? " item" : " itens");
           var tb = $("d-tabela");
           tb.textContent = "";
           $("d-baixar").disabled = !linhas.length;
@@ -8709,6 +8868,13 @@
         });
         $("d-busca").addEventListener("input", renderDashboard);
         $("d-sempedido").addEventListener("change", renderDashboard);
+        $("d-limpar").addEventListener("click", function () {
+          ["d-cliente", "d-status", "d-sit", "d-busca"].forEach(function (id) {
+            $(id).value = "";
+          });
+          $("d-sempedido").checked = false;
+          renderDashboard();
+        });
         $("d-baixar").addEventListener("click", function () {
           var d = linhasDashboard(),
             dt = new Date(),
@@ -9232,8 +9398,8 @@
             );
             return;
           }
-          var W = 900,
-            H = 190,
+          var W = 600,
+            H = 230,
             L = 46,
             R = 8,
             T = 12,

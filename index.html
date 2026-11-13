@@ -3495,6 +3495,8 @@
       table.dup-tab .op .preco em { font-style: normal; font-size: 0.8125rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
       table.dup-tab .op .preco em.barato { color: #1d7a3e; }
       table.dup-tab .op .preco em.caro { color: #a33628; }
+      #v-dashboard .d-acoes-det { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      #d-tabela.sem-prod :is(th.col-prod, td.prod) { display: none; }
     </style>
   </head>
   <body>
@@ -4272,14 +4274,14 @@
                   </div>
                   <div id="g2"></div>
                 </section>
-                <section class="graf" aria-labelledby="g3-t">
+                <section class="graf" aria-labelledby="g3-t" hidden style="display: none">
                   <h3 id="g3-t">Unidades e valor por etapa do pedido</h3>
                   <div class="sub">
                     Quanto do volume ainda está sem validação.
                   </div>
                   <div id="g3"></div>
                 </section>
-                <section class="graf" aria-labelledby="g4-t">
+                <section class="graf" aria-labelledby="g4-t" hidden style="display: none">
                   <h3 id="g4-t">Entrada de unidades por dia</h3>
                   <div class="sub" id="g4-s">
                     Últimos 30 dias, pela data do pedido.
@@ -4291,7 +4293,10 @@
             <div class="d-detail">
               <div class="d-section-heading">
                 <div><h3>Detalhamento dos itens</h3><span>Quantidades, valores e mínimo por produto</span></div>
-                <span class="d-count" id="d-contagem" aria-live="polite"></span>
+                <span class="d-acoes-det">
+                  <button type="button" class="btn small" id="d-prod-btn" aria-pressed="false"></button>
+                  <span class="d-count" id="d-contagem" aria-live="polite"></span>
+                </span>
               </div>
               <div class="scroll" role="region" aria-label="Detalhamento dos itens; role horizontalmente para ver todas as colunas" tabindex="0"><table class="dash" id="d-tabela"></table></div>
             </div>
@@ -9489,6 +9494,28 @@
             (aoVivo ? "Ao vivo" : "Atualiza a cada 30 s") +
             (h ? " · atualizado às " + h : "");
         }
+        // Coluna Produto do detalhamento: oculta por padrão; cada pessoa escolhe.
+        function mostrarProdutoDash() {
+          try {
+            return localStorage.getItem("dash-produto") === "1";
+          } catch (e) {
+            return false;
+          }
+        }
+        function aplicarProdutoDash() {
+          var on = mostrarProdutoDash(),
+            b = $("d-prod-btn");
+          $("d-tabela").classList.toggle("sem-prod", !on);
+          b.textContent = on ? "Ocultar descrição" : "Mostrar descrição";
+          b.setAttribute("aria-pressed", String(on));
+        }
+        $("d-prod-btn").addEventListener("click", function () {
+          try {
+            localStorage.setItem("dash-produto", mostrarProdutoDash() ? "0" : "1");
+          } catch (e) {}
+          aplicarProdutoDash();
+        });
+        aplicarProdutoDash();
         function renderValorDash(linhas) {
           var fc = $("d-cliente").value,
             fs = $("d-status").value,
@@ -9688,7 +9715,7 @@
           var th = el("thead"),
             hr = el("tr");
           hr.appendChild(el("th", null, "Código"));
-          hr.appendChild(el("th", null, "Produto"));
+          hr.appendChild(el("th", "col-prod", "Produto"));
           cols.forEach(function (c) {
             hr.appendChild(el("th", "num", c.nome));
           });

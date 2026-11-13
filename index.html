@@ -3406,6 +3406,32 @@
       }
       #v-dashboard .seg-tab > div > b { grid-column: 2; }
       #v-dashboard .seg-tab > div > .rs { grid-column: 3; }
+      /* prioridade de fabricação */
+      button.prio {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin: 6px auto 0;
+        padding: 3px 10px;
+        border-radius: 99px;
+        border: 1px solid #f0c9a8;
+        background: #fff;
+        color: #9a4a12;
+        font: 600 12.5px var(--body);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      button.prio[hidden] { display: none; }
+      button.prio:hover { background: #fff4ea; }
+      button.prio.on { background: #d9661f; border-color: #d9661f; color: #fff; }
+      table.cat td.qtd button.prio,
+      table.cat td.ql button.prio { display: flex; }
+      table.cat td.qtd button.prio[hidden],
+      table.cat td.ql button.prio[hidden] { display: none; }
+      .pill.prio { background: #fde6d4; color: #9a4a12; }
+      .pn-prio { color: #d9661f; font-weight: 700; margin-left: 6px; }
+      #t-prio { margin: 0; }
+      #t-prio b { color: #9a4a12; }
     </style>
   </head>
   <body>
@@ -3934,6 +3960,7 @@
                 </div>
               </div>
               <div class="resumo-lojas" id="t-lojas" hidden></div>
+              <p class="hint" id="t-prio" hidden></p>
               <p class="hint">
                 Cada caixa contém um único produto. Meias caixas de produtos
                 diferentes ficam separadas.
@@ -4788,6 +4815,7 @@
               o.value = e[0];
               fs.appendChild(o);
             });
+          pBanco = checarBanco();
           carregarRascunhoCat();
           novoFormulario(true);
           carregarCatalogo();
@@ -4936,6 +4964,7 @@
           };
           if (!manterCatalogo) {
             cat.qtd = {};
+            cat.prio = {};
             salvarRascunhoCat();
             renderCatalogo();
           }
@@ -5016,6 +5045,7 @@
           }, 180);
         }
         function totais() {
+          atualizarPrioResumo();
           var v = itensValidos().concat(itensCatalogo());
           var dist = {},
             nItens = 0;
@@ -5316,6 +5346,7 @@
             status: "recebido"
           };
           cat.qtd = {};
+          cat.prio = {};
           salvarRascunhoCat();
           renderCatalogo();
           mostrarRecibo(ultimo);
@@ -5462,21 +5493,47 @@
         function refItem(c) {
           return c.ref_final || c.ref_brasil || c.ref_china || "";
         }
+        // A prioridade e a edição dependem do SQL sql/editar-pedido-e-prioridade.sql.
+        // Enquanto ele não roda no Supabase, essas opções ficam escondidas.
+        var bancoAtualizado = false,
+          pBanco = null;
+        async function checarBanco() {
+          try {
+            var r = await sb.from("pedido_itens").select("prioridade").limit(1);
+            bancoAtualizado = !r.error;
+          } catch (e) {
+            bancoAtualizado = false;
+          }
+          if (cat.itens.length) renderCatalogo();
+          return bancoAtualizado;
+        }
         function chaveRascunho() {
           return "rascunho-catalogo-" + ((perfil && perfil.id) || "");
         }
         function salvarRascunhoCat() {
+          if (cat.edit) return; // editando um pedido: não mexe no rascunho
           try {
             localStorage.setItem(chaveRascunho(), JSON.stringify(cat.qtd));
+            localStorage.setItem(
+              chaveRascunho() + "-prio",
+              JSON.stringify(cat.prio || {})
+            );
           } catch (e) {}
         }
         function carregarRascunhoCat() {
           cat.qtd = {};
+          cat.prio = {};
           try {
             var r = JSON.parse(localStorage.getItem(chaveRascunho()) || "{}");
             Object.keys(r).forEach(function (k) {
               var q = parseQtd(r[k]);
               if (q > 0) cat.qtd[k] = q;
+            });
+            var pr = JSON.parse(
+              localStorage.getItem(chaveRascunho() + "-prio") || "{}"
+            );
+            Object.keys(pr).forEach(function (k) {
+              if (pr[k]) cat.prio[k] = true;
             });
           } catch (e) {}
         }
@@ -5521,6 +5578,7 @@
                 catalogo_id: Number(id)
               };
               if (loja) it.loja_id = loja;
+              if (cat.prio && cat.prio[id]) it.prioridade = true;
               return it;
             })
             .filter(Boolean)
@@ -5966,6 +6024,53 @@
             $("dlg-lojas-sim").click();
           }
         });
+        function botaoPrio(c, q) {
+          if (!bancoAtualizado) return null;
+          var on = !!(cat.prio && cat.prio[c.id]),
+            b = el("button", "prio" + (on ? " on" : ""));
+          b.type = "button";
+          b.dataset.prio = c.id;
+          b.textContent = on ? "⚑ Prioritário" : "⚑ Prioridade";
+          b.setAttribute("aria-pressed", String(on));
+          b.title = on
+            ? "Item marcado para ser fabricado primeiro. Clique para desmarcar."
+            : "Pedir prioridade de fabricação para este item";
+          b.hidden = !(q > 0);
+          return b;
+        }
+        function atualizarPrioResumo() {
+          var box = $("t-prio");
+          if (!box) return;
+          if (!bancoAtualizado) {
+            box.hidden = true;
+            return;
+          }
+          var n = 0;
+          cat.itens.forEach(function (c) {
+            if (cat.prio && cat.prio[c.id] && qtdTotal(c.id) > 0) n++;
+          });
+          box.hidden = false;
+          box.textContent = "";
+          if (n) {
+            box.appendChild(
+              el(
+                "b",
+                null,
+                "⚑ " +
+                  fmtInt(n) +
+                  (n === 1
+                    ? " item com prioridade de fabricação."
+                    : " itens com prioridade de fabricação.")
+              )
+            );
+          } else {
+            box.appendChild(
+              document.createTextNode(
+                "Quer receber algum item antes dos outros? Use o botão ⚑ Prioridade na linha do produto."
+              )
+            );
+          }
+        }
         function linhaCat(c) {
           var q = qtdTotal(c.id),
             tr = el("tr", q > 0 ? "tem" : "");
@@ -6029,6 +6134,8 @@
               td.classList.add(ds.querySelector(".fora") ? "q-bad" : "q-ok");
             td.appendChild(bm);
             td.appendChild(ds);
+            var bpm = botaoPrio(c, q);
+            if (bpm) td.appendChild(bpm);
             tr.appendChild(td);
             var tt = el("td", "qtd tot-l" + (q > 0 ? " q-ok" : ""));
             tt.appendChild(el("b", null, q ? fmtInt(q) : "0"));
@@ -6037,6 +6144,8 @@
           } else {
             var tq = el("td", "qtd");
             campo(tq, null);
+            var bps = botaoPrio(c, q);
+            if (bps) tq.appendChild(bps);
             tr.appendChild(tq);
           }
           return tr;
@@ -6146,6 +6255,8 @@
           tdq.classList.toggle("q-ok", n > 0 && !x.fora);
           tdq.classList.toggle("q-bad", n > 0 && !!x.fora);
           tr.className = tot > 0 ? "tem" : "";
+          var bpr = tr.querySelector("button.prio");
+          if (bpr) bpr.hidden = !(tot > 0);
           var tl = tr.querySelector("td.tot-l");
           if (tl) {
             tl.classList.toggle("q-ok", tot > 0);
@@ -6165,6 +6276,23 @@
           if (e.target.dataset && e.target.dataset.id) renderChips();
         });
         $("cat-tab").addEventListener("click", function (e) {
+          var bp = e.target.closest && e.target.closest("button[data-prio]");
+          if (bp) {
+            var idp = bp.dataset.prio;
+            if (!cat.prio) cat.prio = {};
+            if (cat.prio[idp]) delete cat.prio[idp];
+            else cat.prio[idp] = true;
+            var on = !!cat.prio[idp];
+            bp.classList.toggle("on", on);
+            bp.textContent = on ? "⚑ Prioritário" : "⚑ Prioridade";
+            bp.setAttribute("aria-pressed", String(on));
+            bp.title = on
+              ? "Item marcado para ser fabricado primeiro. Clique para desmarcar."
+              : "Pedir prioridade de fabricação para este item";
+            atualizarPrioResumo();
+            agendarRascunho();
+            return;
+          }
           var bd = e.target.closest && e.target.closest("button[data-dividir]");
           if (bd) {
             abrirDividir(cat.porId[bd.dataset.dividir]);
@@ -7089,7 +7217,8 @@
                 " | " +
                 fmtInt(i.qtd) +
                 " un" +
-                (lj ? " → " + lj.nome : "")
+                (lj ? " → " + lj.nome : "") +
+                (i.prioridade ? " | PRIORIDADE DE FABRICAÇÃO" : "")
             );
           });
           l.push(
@@ -7287,6 +7416,7 @@
             ["Produto", "t"],
             ["Categoria", "t"],
             ["Loja", "t"],
+            ["Prioridade de fabricação", "t"],
             ["Quantidade", "i"],
             ["Cx master (un/cx)", "i"],
             ["Caixas inteiras", "i"],
@@ -7314,6 +7444,7 @@
                 i.produto,
                 c ? catDe(c) : "",
                 lj ? lj.nome : "",
+                i.prioridade ? "Sim" : "",
                 i.qtd,
                 c && c.cx_master ? c.cx_master : null,
                 caixas.semInfo ? null : caixas.inteiras,
@@ -7360,6 +7491,11 @@
               tg.style.marginLeft = "8px";
               tdp.appendChild(tg);
             }
+            if (i.prioridade) {
+              var tgp = el("span", "pill prio", "⚑ Prioridade");
+              tgp.style.marginLeft = "8px";
+              tdp.appendChild(tgp);
+            }
             tr.appendChild(tdp);
             tr.appendChild(el("td", "num", fmtInt(i.qtd)));
             tbody.appendChild(tr);
@@ -7404,6 +7540,7 @@
 
         /* ================= PAINEL DE PEDIDOS ================= */
         async function buscarPedidos() {
+          if (pBanco) await pBanco;
           var todos = [],
             de = 0,
             T = 1000;
@@ -7411,7 +7548,9 @@
             var r = await sb
               .from("pedidos")
               .select(
-                "id,numero,status,responsavel,obs,criado_em,cliente_id,pedido_itens(ordem,ref,produto,qtd,loja_id,catalogo_id)"
+                "id,numero,status,responsavel,obs,criado_em,cliente_id,criado_por,pedido_itens(ordem,ref,produto,qtd,loja_id,catalogo_id" +
+                  (bancoAtualizado ? ",prioridade" : "") +
+                  ")"
               )
               .order("criado_em", { ascending: false })
               .range(de, de + T - 1);
@@ -7454,6 +7593,7 @@
               obs: p.obs || "",
               criado_em: p.criado_em,
               cliente_id: p.cliente_id,
+              criado_por: p.criado_por,
               cliente: nomeCliente(p.cliente_id),
               itens: itens,
               unidades: itens.reduce(function (s, i) {
@@ -7735,6 +7875,16 @@
               pi = el("span", "pn-in");
             pi.appendChild(bs);
             pi.appendChild(el("span", null, p.numero));
+            if (
+              p.itens.some(function (i) {
+                return i.prioridade;
+              })
+            ) {
+              var fl = el("b", "pn-prio", "⚑");
+              fl.title = "Pedido com item de prioridade de fabricação";
+              fl.setAttribute("aria-label", "com prioridade de fabricação");
+              pi.appendChild(fl);
+            }
             tn.appendChild(pi);
             tr.appendChild(tn);
             if (mostraCli) {
@@ -7788,6 +7938,10 @@
               ["Descrição", ""],
               ["Categoria", ""]
             ];
+            var temPrio = itens.some(function (i) {
+              return i.prioridade;
+            });
+            if (temPrio) ic.push(["Prioridade", ""]);
             if (temLoja) ic.push(["Loja", ""]);
             ic = ic.concat([
               ["Preço estimado (R$)", "num"],
@@ -7823,6 +7977,12 @@
               row.appendChild(el("td", "nw", i.ref || "-"));
               row.appendChild(el("td", "w", i.produto || ""));
               row.appendChild(el("td", null, catItem(i)));
+              if (temPrio) {
+                var tdp = el("td");
+                if (i.prioridade)
+                  tdp.appendChild(el("span", "pill prio", "⚑ Prioridade"));
+                row.appendChild(tdp);
+              }
               if (temLoja) {
                 var lj = i.loja_id && lojaPorId(i.loja_id);
                 row.appendChild(el("td", null, lj ? lj.nome : "-"));

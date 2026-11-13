@@ -2728,84 +2728,15 @@
         color: var(--muted);
       }
       /* quantidade única + botão para dividir entre lojas */
-      .lojas-wrap {
-        margin-left: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 6px;
-        min-width: 0;
-      }
-      .lojas-wrap .lojas-chips {
-        margin-left: 0;
-        justify-content: flex-end;
-      }
-      .lojas-dica {
-        margin: 0;
-        font-size: 12px;
-        color: var(--muted);
-        text-align: right;
-        max-width: 520px;
-        line-height: 1.35;
-      }
-      .lojas-dica b {
-        color: var(--ink);
-      }
-      button.loja-chip {
-        font: inherit;
-        color: inherit;
-        text-align: left;
-        cursor: pointer;
-        transition: border-color 0.15s, box-shadow 0.15s;
-      }
-      button.loja-chip:hover {
-        border-color: #9db3cc;
-      }
-      button.loja-chip[aria-pressed="true"] {
-        border-color: var(--lc, #2f7be0);
-        box-shadow: 0 0 0 2px var(--lc, #2f7be0);
-      }
-      button.loja-chip .sel {
-        display: none;
-        font-size: 10.5px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        color: var(--lc, #2f7be0);
-      }
-      button.loja-chip[aria-pressed="true"] .sel {
-        display: block;
-      }
       table.cat th.qtd-l {
-        width: 132px;
-        min-width: 132px;
-      }
-      table.cat th.qtd-l small {
-        display: block;
-        margin-top: 3px;
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0;
-        text-transform: none;
-        background: #fff;
-        border-radius: 8px;
-        padding: 2px 8px;
+        width: 120px;
+        min-width: 120px;
         white-space: normal;
-        line-height: 1.2;
-      }
-      table.cat td.ql .qwrap {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-      }
-      table.cat td.ql .qwrap input {
-        margin: 0;
       }
       table.cat td.ql button.mais {
-        flex: none;
-        width: 28px;
-        height: 28px;
+        margin: 0 auto;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         border: 1.5px solid var(--azul, #0b3d6e);
         background: #fff;
@@ -4836,45 +4767,20 @@
           m.appendChild(t);
           box.appendChild(m);
           if (cat.lojas.length) {
-            var wrap = el("div", "lojas-wrap"),
-              dica = el("p", "lojas-dica"),
-              ch = el("div", "lojas-chips");
-            dica.appendChild(
-              document.createTextNode(
-                "Escolha a loja que vai receber a quantidade digitada. Para dividir um produto entre lojas, use o botão "
-              )
-            );
-            dica.appendChild(el("b", null, "+"));
-            dica.appendChild(
-              document.createTextNode(" ao lado da quantidade e indique a loja.")
-            );
-            wrap.appendChild(dica);
+            var ch = el("div", "lojas-chips");
             cat.lojas.forEach(function (l, i) {
-              var c = el("button", "loja-chip"),
+              var c = el("div", "loja-chip"),
                 bar = el("i");
-              c.type = "button";
-              c.dataset.loja = l.id;
-              c.style.setProperty("--lc", corLoja(i));
-              c.setAttribute(
-                "aria-pressed",
-                l.id === cat.lojaAtiva ? "true" : "false"
-              );
               bar.style.background = corLoja(i);
               c.appendChild(bar);
               c.appendChild(marcaEl(logoLoja(l), l.nome, 34, corLoja(i)));
               var tx = el("div");
               tx.appendChild(el("b", null, l.nome));
               if (l.endereco) tx.appendChild(el("small", null, l.endereco));
-              tx.appendChild(el("span", "sel", "Recebendo a quantidade"));
               c.appendChild(tx);
               ch.appendChild(c);
             });
-            ch.addEventListener("click", function (e) {
-              var b = e.target.closest("button.loja-chip");
-              if (b) definirLojaAtiva(b.dataset.loja);
-            });
-            wrap.appendChild(ch);
-            box.appendChild(wrap);
+            box.appendChild(ch);
           }
         }
         $("rows").addEventListener("input", function (e) {
@@ -5330,8 +5236,6 @@
             if (!cat.porId[k.split("@")[0]]) delete cat.qtd[k];
           });
           cat.lojas = multiLojas();
-          if (!lojaPorId(cat.lojaAtiva) || !cat.lojas.length)
-            cat.lojaAtiva = cat.lojas.length ? cat.lojas[0].id : null;
           renderCliTopo();
           renderCatalogo();
           if (
@@ -5583,28 +5487,16 @@
                 })
             : "";
         }
-        function lojaAtivaIdx() {
-          for (var i = 0; i < cat.lojas.length; i++)
-            if (cat.lojas[i].id === cat.lojaAtiva) return i;
-          return 0;
-        }
         function thQtdLoja() {
-          var th = el("th", "qtd-l num"),
-            ia = lojaAtivaIdx(),
-            sm = el("small", null, "para: " + cat.lojas[ia].nome);
-          th.appendChild(document.createTextNode("QUANTIDADE"));
-          sm.style.color = corLoja(ia);
-          th.appendChild(sm);
-          return th;
+          return el("th", "qtd-l num", "QUANTIDADE POR LOJA");
         }
         function distEl(c) {
           var d = el("span", "dist"),
-            ativa = lojaAtivaIdx(),
             outras = false;
           cat.lojas.forEach(function (l, i) {
             var q = cat.qtd[chaveQ(c.id, l.id)] || 0;
             if (!q) return;
-            if (i !== ativa) outras = true;
+            outras = true;
             var sp = el("span", "dp" + (textoCx(c, q).fora ? " fora" : "")),
               dot = el("i");
             dot.style.background = corLoja(i);
@@ -5630,19 +5522,6 @@
               if (cat.obs) cat.obs.observe(im);
               else pedirImagem(im.dataset.cat);
             });
-        }
-        function definirLojaAtiva(id) {
-          if (!lojaPorId(id) || cat.lojaAtiva === id) return;
-          cat.lojaAtiva = id;
-          document.querySelectorAll("button.loja-chip").forEach(function (b) {
-            b.setAttribute(
-              "aria-pressed",
-              b.dataset.loja === id ? "true" : "false"
-            );
-          });
-          var th = document.querySelector("#cat-tab th.qtd-l");
-          if (th) th.replaceWith(thQtdLoja());
-          recriarLinhas();
         }
         function abrirDividir(c) {
           if (!c) return;
@@ -5675,7 +5554,7 @@
             lin.appendChild(inp);
             lin.appendChild(cx);
             lista.appendChild(lin);
-            if (!primeiro || l.id === cat.lojaAtiva) primeiro = inp;
+            if (!primeiro) primeiro = inp;
           });
           atualizarDividir();
           dlg.showModal();
@@ -5769,9 +5648,8 @@
               cls = COLS_LARGAS[k] ? "w" : COLS_NUM[k] ? "n" : "nw";
             tr.appendChild(el("td", cls + (t ? "" : " vazio"), t || "-"));
           });
-          function campo(td, loja) {
-            var wrapq = loja ? el("div", "qwrap") : td,
-              qq = cat.qtd[chaveQ(c.id, loja && loja.id)] || 0,
+          function campo(td) {
+            var qq = cat.qtd[chaveQ(c.id)] || 0,
               inp = el("input");
             inp.type = "text";
             inp.inputMode = "numeric";
@@ -5779,35 +5657,28 @@
             inp.placeholder = "0";
             inp.value = qq ? String(qq) : "";
             inp.dataset.id = c.id;
-            if (loja) inp.dataset.loja = loja.id;
-            inp.setAttribute(
-              "aria-label",
-              "Quantidade de " + refItem(c) + (loja ? " para " + loja.nome : "")
-            );
+            inp.setAttribute("aria-label", "Quantidade de " + refItem(c));
             var cx = textoCx(c, qq);
             if (cx.fora) inp.classList.add("invalid");
             if (qq > 0) td.classList.add(cx.fora ? "q-bad" : "q-ok");
-            wrapq.appendChild(inp);
-            if (loja) {
-              var bm = el("button", "mais", "+");
-              bm.type = "button";
-              bm.dataset.dividir = c.id;
-              bm.title = "Dividir entre lojas";
-              bm.setAttribute(
-                "aria-label",
-                "Dividir " + refItem(c) + " entre lojas"
-              );
-              wrapq.appendChild(bm);
-              td.appendChild(wrapq);
-            }
+            td.appendChild(inp);
             td.appendChild(el("span", "cx" + (cx.fora ? " fora" : ""), cx.t));
-            if (loja) td.appendChild(distEl(c));
           }
           if (cat.lojas.length) {
-            var ia = lojaAtivaIdx(),
-              td = el("td", "ql");
-            td.style.background = corLoja(ia) + "14";
-            campo(td, cat.lojas[ia]);
+            var td = el("td", "ql"),
+              bm = el("button", "mais", "+"),
+              ds = distEl(c);
+            bm.type = "button";
+            bm.dataset.dividir = c.id;
+            bm.title = "Informar a quantidade de cada loja";
+            bm.setAttribute(
+              "aria-label",
+              "Informar a quantidade de " + refItem(c) + " para cada loja"
+            );
+            if (q > 0)
+              td.classList.add(ds.querySelector(".fora") ? "q-bad" : "q-ok");
+            td.appendChild(bm);
+            td.appendChild(ds);
             tr.appendChild(td);
             var tt = el("td", "qtd tot-l" + (q > 0 ? " q-ok" : ""));
             tt.appendChild(el("b", null, q ? fmtInt(q) : "0"));
@@ -5919,8 +5790,6 @@
             sp = tdq.querySelector(".cx"),
             x = textoCx(c, n),
             tot = qtdTotal(c.id);
-          var dv = tdq.querySelector(".dist");
-          if (dv) dv.replaceWith(distEl(c));
           sp.textContent = x.t;
           sp.className = "cx" + (x.fora ? " fora" : "");
           inp.classList.toggle("invalid", x.fora);

@@ -9,3 +9,7 @@
 # Apresentação dos números
 
 - Por preferência expressa do usuário, exiba valores e quantidades completos em todas as telas, cartões, gráficos e dicas. Não abrevie com “mil”, “mi”, “k” ou notação compacta. Use separadores pt-BR; valores monetários devem incluir R$ e duas casas decimais. Adapte o layout para acomodar o número completo.
+
+# Legibilidade
+
+- Nos painéis de pedidos e de itens, use pelo menos `1rem` para textos, legendas, filtros e tabelas (16px na configuração padrão do navegador), entrelinha de 1,5 e títulos/indicadores maiores. Preserve fontes relativas, contraste e zoom; reorganize os cartões em telas menores em vez de reduzir a fonte. Essa é uma decisão de legibilidade do projeto, não uma declaração de conformidade integral à ABNT NBR 17225.

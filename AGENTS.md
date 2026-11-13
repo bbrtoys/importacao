@@ -12,4 +12,4 @@
 
 # Legibilidade
 
-- Nos painéis de pedidos e de itens, use `0.9375rem` (15px na configuração padrão) para textos e tabelas e `0.875rem` (14px) como mínimo para rótulos, legendas e cabeçalhos, com entrelinha de 1,5. Títulos e indicadores ficam maiores, sem exagero: o usuário achou 16px com números grandes pesado demais. Preserve fontes relativas, contraste e zoom; reorganize os cartões em telas menores em vez de reduzir a fonte. Essa é uma decisão de legibilidade do projeto, não uma declaração de conformidade integral à ABNT NBR 17225.
+- Nos painéis de pedidos e de itens, por escolha do usuário: texto e tabelas em `0.9375rem` (15px na configuração padrão), subtítulos (h3) em `1rem` (16px), títulos (h2) em negrito e `0.875rem` (14px) como mínimo para rótulos, legendas e cabeçalhos, com entrelinha de 1,5. O usuário achou 16px no texto com números grandes pesado demais e recusou 11px. Preserve fontes relativas, contraste e zoom; reorganize os cartões em telas menores em vez de reduzir a fonte. Isso não é uma declaração de conformidade com normas da ABNT.

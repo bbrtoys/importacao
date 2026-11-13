@@ -7422,10 +7422,14 @@
           }
           return { data: todos };
         }
-        // Os números antigos têm a data no meio (IMP-261113-0007); a sequência
-        // já é única, então exibimos só IMP-0007.
+        // Os números antigos vêm como IMP-261113-0007 ou IMP-0007; a sequência
+        // já é única, então exibimos só IMP0007.
         function numeroCurto(n) {
-          return String(n || "").replace(/^IMP-\d{6}-/, "IMP-");
+          return String(n || "").replace(/^IMP-(\d{6}-)?/, "IMP");
+        }
+        // Quem digitar "IMP-0007" por costume também encontra o pedido.
+        function buscaNumero(q) {
+          return q.replace(/^imp-/, "imp");
         }
         async function carregarDados(erroEm) {
           erroEm.hidden = true;
@@ -7466,7 +7470,7 @@
         function filtrados(semCat) {
           var c = $("fil-cliente").value,
             s = $("fil-status").value,
-            q = $("fil-busca").value.trim().toLowerCase(),
+            q = buscaNumero($("fil-busca").value.trim().toLowerCase()),
             temC = !semCat && Object.keys(pCats).length > 0;
           return pedidos.filter(function (p) {
             if (c && p.cliente_id !== c) return false;
@@ -8569,7 +8573,7 @@
         // Busca do dashboard: casa com o número do pedido (todos os itens dele)
         // ou com o código/descrição do item.
         function passaBuscaDash(p, i) {
-          var fq = $("d-busca").value.trim().toLowerCase();
+          var fq = buscaNumero($("d-busca").value.trim().toLowerCase());
           if (!fq) return true;
           if (String(p.numero || "").toLowerCase().indexOf(fq) >= 0) return true;
           return (

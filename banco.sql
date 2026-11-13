@@ -120,7 +120,7 @@ begin
     raise exception 'O pedido aceita no máximo 1000 itens.';
   end if;
 
-  v_numero := 'IMP-' || lpad(nextval('public.pedido_seq')::text, 4, '0');
+  v_numero := 'IMP' || lpad(nextval('public.pedido_seq')::text, 4, '0');
 
   insert into public.pedidos (numero, cliente_id, criado_por, responsavel, obs)
   values (v_numero, v_cliente, auth.uid(),
@@ -297,7 +297,7 @@ begin
     raise exception 'O pedido aceita no máximo 1500 itens.';
   end if;
 
-  v_numero := 'IMP-' || lpad(nextval('public.pedido_seq')::text, 4, '0');
+  v_numero := 'IMP' || lpad(nextval('public.pedido_seq')::text, 4, '0');
 
   insert into public.pedidos (numero, cliente_id, criado_por, responsavel, obs)
   values (v_numero, v_cliente, auth.uid(),
@@ -426,7 +426,7 @@ begin
     raise exception 'Quantidade fora da caixa master (aceita caixa inteira ou meia caixa): %', v_ruim;
   end if;
 
-  v_numero := 'IMP-' || lpad(nextval('public.pedido_seq')::text, 4, '0');
+  v_numero := 'IMP' || lpad(nextval('public.pedido_seq')::text, 4, '0');
 
   insert into public.pedidos (numero, cliente_id, criado_por, responsavel, obs)
   values (v_numero, v_cliente, auth.uid(),

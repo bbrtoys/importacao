@@ -1,8 +1,8 @@
 -- =====================================================================
--- Número do pedido sem a data: IMP-0007 em vez de IMP-261113-0007.
+-- Número do pedido sem a data e sem hífen: IMP0007 em vez de IMP-261113-0007.
 -- Rodar uma vez no SQL Editor do Supabase.
 -- Só muda os pedidos novos; os antigos continuam gravados com a data
--- (o site já os exibe sem a data). A sequência continua a mesma,
+-- (o site já os exibe como IMP0007). A sequência continua a mesma,
 -- então não há número repetido.
 -- =====================================================================
 
@@ -52,7 +52,7 @@ begin
     raise exception 'Quantidade fora da caixa master (aceita caixa inteira ou meia caixa): %', v_ruim;
   end if;
 
-  v_numero := 'IMP-' || lpad(nextval('public.pedido_seq')::text, 4, '0');
+  v_numero := 'IMP' || lpad(nextval('public.pedido_seq')::text, 4, '0');
 
   insert into public.pedidos (numero, cliente_id, criado_por, responsavel, obs)
   values (v_numero, v_cliente, auth.uid(),

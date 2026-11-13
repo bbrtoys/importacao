@@ -8273,15 +8273,13 @@
           return r;
         }
         function renderPCats(base) {
-          var cont = {};
+          var cont = {},
+            totUn = 0;
           base.forEach(function (p) {
-            var v = {};
             p.itens.forEach(function (i) {
               var k = catItem(i);
-              if (!v[k]) {
-                v[k] = 1;
-                cont[k] = (cont[k] || 0) + 1;
-              }
+              cont[k] = (cont[k] || 0) + i.qtd;
+              totUn += i.qtd;
             });
           });
           Object.keys(pCats).forEach(function (k) {
@@ -8297,7 +8295,7 @@
           var cats = Object.keys(cont).sort(function (a, b) {
             return cont[b] - cont[a] || a.localeCompare(b, "pt-BR");
           });
-          [["", "Todas", base.length]]
+          [["", "Todas", totUn]]
             .concat(
               cats.map(function (k) {
                 return [k, k, cont[k]];
@@ -8313,24 +8311,24 @@
               );
               b.appendChild(el("span", "nm", x[1]));
               var sm = el("small", null, fmtInt(x[2]));
-              sm.title = fmtInt(x[2]) + (x[2] === 1 ? " pedido" : " pedidos");
+              sm.title = fmtInt(x[2]) + (x[2] === 1 ? " unidade" : " unidades");
               b.appendChild(sm);
               ll.appendChild(b);
               if (fl === b.dataset.kp) b.focus();
             });
         }
         function resumoPedidos(lista) {
-          var grupos = [{ etapa: "", nome: "Pedidos", quantidade: 0, valor: 0 }].concat(
+          var grupos = [{ etapa: "", nome: "Unidades pedidas", quantidade: 0, valor: 0 }].concat(
             ETAPAS_VISIVEIS.map(function (e) {
               return { etapa: e[0], nome: e[1], quantidade: 0, valor: 0 };
             })
           );
           lista.forEach(function (p) {
-            var valor = resumoItens(itensVis(p)).valor;
+            var r = resumoItens(itensVis(p));
             grupos.forEach(function (g) {
               if (!g.etapa || g.etapa === p.status) {
-                g.quantidade++;
-                g.valor += valor;
+                g.quantidade += r.un;
+                g.valor += r.valor;
               }
             });
           });
@@ -8350,7 +8348,7 @@
               var card = el("div", "tile");
               card.appendChild(el("span", null, monetario && !g.etapa ? "Valor total estimado" : g.nome));
               card.appendChild(el("b", null, monetario ? fmtRs(g.valor) : fmtInt(g.quantidade)));
-              card.appendChild(el("small", null, monetario ? "Valor estimado (R$)" : "Pedidos nos filtros atuais"));
+              card.appendChild(el("small", null, monetario ? "Valor estimado (R$)" : "Unidades nos filtros atuais"));
               box.appendChild(card);
             });
           });
@@ -9494,12 +9492,12 @@
             tot += v;
             var e = porEt[p.status] || (porEt[p.status] = { v: 0, n: 0 });
             e.v += v;
-            e.n++;
+            e.n += u;
           });
           var box = $("d-valor");
           box.textContent = "";
           var esq = el("div");
-          esq.appendChild(el("span", "rot", "Valor total estimado dos pedidos"));
+          esq.appendChild(el("span", "rot", "Valor total estimado da importação"));
           var big = el("span", "d-total");
           big.appendChild(el("small", null, "R$"));
           big.appendChild(
@@ -9516,18 +9514,18 @@
             el(
               "div",
               "sub",
-              nPed
+              un
                 ? fmtInt(un) +
-                    " unidades em " +
-                    fmtInt(nPed) +
-                    (nPed === 1 ? " pedido" : " pedidos") +
-                    " de " +
+                    (un === 1 ? " unidade pedida" : " unidades pedidas") +
+                    " por " +
                     fmtInt(nCli) +
                     (nCli === 1 ? " cliente" : " clientes") +
-                    " · média de " +
-                    fmtRs(tot / nPed) +
-                    " por pedido"
-                : "Nenhum pedido com os filtros atuais."
+                    (un - semP > 0
+                      ? " · preço médio de " +
+                        fmtRs(tot / (un - semP)) +
+                        " por unidade"
+                      : "")
+                : "Nenhuma unidade pedida com os filtros atuais."
             )
           );
           if (semP)
@@ -9568,7 +9566,7 @@
                 (tot ? Math.round((o.v / tot) * 100) : 0) +
                   "% do valor · " +
                   fmtInt(o.n) +
-                  (o.n === 1 ? " pedido" : " pedidos")
+                  (o.n === 1 ? " unidade" : " unidades")
               )
             );
             et.appendChild(c);
@@ -9598,7 +9596,7 @@
           [
             ["Itens no catálogo", Object.keys(refsChina).length, "Catálogo completo"],
             [
-              "Itens com pedido",
+              "Itens pedidos",
               linhas.filter(function (l) {
                 return l.total > 0;
               }).length, "Com os filtros atuais"

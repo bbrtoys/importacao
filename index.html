@@ -3489,6 +3489,12 @@
       table.dup-tab .op .atual { font-size: 0.8125rem; font-weight: 700; color: #1d7a3e; }
       dialog.dup-dlg .leg-dif { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: #fff8e1; border: 1px solid #f0c040; vertical-align: middle; margin-right: 4px; }
       dialog.dup-dlg .acoes { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px 22px; }
+      table.dup-tab .op .preco { display: flex; flex-direction: column; gap: 2px; }
+      table.dup-tab .op .preco small { font-size: 0.8125rem; color: var(--muted); font-weight: 600; text-transform: none; letter-spacing: 0; }
+      table.dup-tab .op .preco b { font-size: 1.375rem; color: #173b5a; }
+      table.dup-tab .op .preco em { font-style: normal; font-size: 0.8125rem; font-weight: 700; text-transform: none; letter-spacing: 0; }
+      table.dup-tab .op .preco em.barato { color: #1d7a3e; }
+      table.dup-tab .op .preco em.caro { color: #a33628; }
     </style>
   </head>
   <body>
@@ -6360,6 +6366,11 @@
         }
         var DUP_CAMPOS = [
           "showroom",
+          "preco",
+          "fob",
+          "moq",
+          "cx_master",
+          "display",
           "ref_china",
           "ref_brasil",
           "ref_final",
@@ -6367,11 +6378,6 @@
           "descricao_original",
           "categoria",
           "subcategoria",
-          "preco",
-          "fob",
-          "moq",
-          "cx_master",
-          "display",
           "pack",
           "inner_qtd",
           "dim_cx",
@@ -6402,6 +6408,16 @@
             m.length +
             " vezes na planilha. Compare as opções e escolha de qual showroom você quer comprar.";
           tab.textContent = "";
+          var precos = m
+              .map(function (x) {
+                return x.preco != null && x.preco !== "" ? Number(x.preco) : null;
+              })
+              .filter(function (v) {
+                return v != null && !isNaN(v);
+              }),
+            menor = precos.length ? Math.min.apply(null, precos) : null,
+            maior = precos.length ? Math.max.apply(null, precos) : null,
+            temDif = menor != null && maior - menor >= 0.005;
           var th = el("thead"),
             hr = el("tr");
           hr.appendChild(el("th", null, ""));
@@ -6425,6 +6441,24 @@
                   (mesmos[nomeShowroom(x)] > 1 ? " · opção " + (i + 1) : "")
               )
             );
+            var pv =
+              x.preco != null && x.preco !== "" ? Number(x.preco) : null;
+            var pr = el("span", "preco");
+            pr.appendChild(el("small", null, "Preço estimado"));
+            pr.appendChild(
+              el("b", null, pv != null && !isNaN(pv) ? fmtRs(pv) : "Sem preço")
+            );
+            if (temDif && pv != null && !isNaN(pv))
+              pr.appendChild(
+                el(
+                  "em",
+                  pv - menor < 0.005 ? "barato" : "caro",
+                  pv - menor < 0.005
+                    ? "Mais barato · " + fmtRs(maior - pv) + " a menos por unidade"
+                    : fmtRs(pv - menor) + " a mais por unidade"
+                )
+              );
+            op.appendChild(pr);
             if (esc === x) op.appendChild(el("span", "atual", "✓ Escolhido"));
             var b = el(
               "button",

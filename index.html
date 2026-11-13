@@ -3449,6 +3449,46 @@
       .edit-banner[hidden] { display: none; }
       .edit-banner b { color: #4a2a00; }
       .edit-banner small { display: block; margin-top: 4px; color: #7a5a2a; }
+      /* item com a mesma Ref China em mais de um showroom */
+      button.dup {
+        display: block;
+        margin: 6px auto 0;
+        padding: 3px 10px;
+        border-radius: 99px;
+        border: 1px solid #f0c040;
+        background: #fff8e1;
+        color: #6b4e00;
+        font: 600 12.5px var(--body);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      button.dup:hover { background: #ffefc2; }
+      button.dup.ok { border-color: #b9d3ee; background: #eef5fc; color: #173b5a; }
+      dialog.dup-dlg {
+        border: 0;
+        border-radius: 20px;
+        padding: 0;
+        width: min(980px, calc(100vw - 32px));
+        max-height: calc(100vh - 40px);
+        box-shadow: 0 24px 60px rgba(10, 30, 60, 0.28);
+        color: var(--ink);
+      }
+      dialog.dup-dlg::backdrop { background: rgba(10, 25, 50, 0.45); backdrop-filter: blur(2px); }
+      dialog.dup-dlg .corpo { padding: 24px 24px 8px; }
+      dialog.dup-dlg h3 { margin: 0 0 6px; font-size: 1.125rem; }
+      dialog.dup-dlg .sub { margin: 0 0 14px; color: var(--muted); font-size: 0.9375rem; line-height: 1.5; }
+      dialog.dup-dlg .dup-scroll { overflow: auto; max-height: calc(100vh - 260px); border: 1px solid var(--rule); border-radius: 12px; }
+      table.dup-tab { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+      table.dup-tab th, table.dup-tab td { padding: 9px 12px; border-bottom: 1px solid #edf1f5; text-align: left; vertical-align: top; }
+      table.dup-tab thead th { background: #f4f7fb; position: sticky; top: 0; z-index: 1; vertical-align: bottom; }
+      table.dup-tab tbody th { color: var(--muted); font-weight: 600; white-space: nowrap; width: 1%; }
+      table.dup-tab tr.dif td { background: #fff8e1; font-weight: 600; }
+      table.dup-tab .op { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+      table.dup-tab .op img { width: 120px; height: 120px; object-fit: contain; background: #fff; border: 1px solid var(--rule); border-radius: 10px; }
+      table.dup-tab .op .sw { font-size: 1.0625rem; font-weight: 700; color: var(--azul-escuro); }
+      table.dup-tab .op .atual { font-size: 0.8125rem; font-weight: 700; color: #1d7a3e; }
+      dialog.dup-dlg .leg-dif { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: #fff8e1; border: 1px solid #f0c040; vertical-align: middle; margin-right: 4px; }
+      dialog.dup-dlg .acoes { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px 22px; }
     </style>
   </head>
   <body>
@@ -4527,6 +4567,20 @@
         ><button type="button" class="btn primary" id="dlg-lojas-sim">
           Aplicar
         </button>
+      </div>
+    </dialog>
+    <dialog class="dup-dlg" id="dlg-dup" aria-labelledby="dlg-dup-t">
+      <div class="corpo">
+        <h3 id="dlg-dup-t">Este item está em mais de um showroom</h3>
+        <p class="sub" id="dlg-dup-sub"></p>
+        <div class="dup-scroll"><table class="dup-tab" id="dlg-dup-tab"></table></div>
+        <p class="sub" style="margin: 10px 0 0">
+          <span class="leg-dif"></span>Linhas destacadas mostram o que muda
+          entre as opções.
+        </p>
+      </div>
+      <div class="acoes">
+        <button type="button" class="btn" id="dlg-dup-fechar">Fechar</button>
       </div>
     </dialog>
     <div id="zoom" hidden>
@@ -5697,6 +5751,10 @@
               chaveRascunho() + "-prio",
               JSON.stringify(cat.prio || {})
             );
+            localStorage.setItem(
+              chaveRascunho() + "-showroom",
+              JSON.stringify(cat.escolha || {})
+            );
           } catch (e) {}
         }
         function carregarRascunhoCat() {
@@ -5714,6 +5772,9 @@
             Object.keys(pr).forEach(function (k) {
               if (pr[k]) cat.prio[k] = true;
             });
+            cat.escolha = JSON.parse(
+              localStorage.getItem(chaveRascunho() + "-showroom") || "{}"
+            );
           } catch (e) {}
         }
         function clienteDoFormulario() {
@@ -5822,6 +5883,7 @@
           todos.forEach(function (c) {
             cat.porId[c.id] = c;
           });
+          montarDuplicados();
           Object.keys(cat.qtd).forEach(function (k) {
             if (!cat.porId[k.split("@")[0]]) delete cat.qtd[k];
           });
@@ -5912,6 +5974,7 @@
             comQ = {},
             totQ = 0;
           cat.itens.forEach(function (c) {
+            if (!visivelNoGrupo(c)) return;
             var k = catDe(c);
             cont[k] = (cont[k] || 0) + 1;
             if (qtdTotal(c.id) > 0) {
@@ -6049,6 +6112,7 @@
           var q = cat.busca.trim().toLowerCase(),
             temF = Object.keys(cat.filtros).length > 0;
           return cat.itens.filter(function (c) {
+            if (!visivelNoGrupo(c)) return false;
             if (temF && !cat.filtros[catDe(c)]) return false;
             if (cat.so && !(qtdTotal(c.id) > 0)) return false;
             if (q) {
@@ -6208,6 +6272,234 @@
             $("dlg-lojas-sim").click();
           }
         });
+        /* ---------- mesma Ref China em mais de um showroom ---------- */
+        function chaveDup(c) {
+          return String(c.ref_china || "").trim().toUpperCase();
+        }
+        function montarDuplicados() {
+          var g = {};
+          cat.itens.forEach(function (c) {
+            var k = chaveDup(c);
+            if (k) (g[k] = g[k] || []).push(c);
+          });
+          cat.dups = {};
+          cat.grupoDe = {};
+          Object.keys(g).forEach(function (k) {
+            if (g[k].length < 2) return;
+            g[k].sort(function (a, b) {
+              return a.ordem - b.ordem;
+            });
+            cat.dups[k] = g[k];
+            g[k].forEach(function (c) {
+              cat.grupoDe[c.id] = k;
+            });
+          });
+          if (!cat.escolha) cat.escolha = {};
+        }
+        function escolhaDup(k) {
+          // item do grupo que o cliente escolheu (ou que já tem quantidade)
+          var m = (cat.dups && cat.dups[k]) || [],
+            comQ = m.filter(function (c) {
+              return qtdTotal(c.id) > 0;
+            });
+          if (comQ.length) return comQ[0];
+          var e = cat.escolha && cat.escolha[k];
+          for (var i = 0; i < m.length; i++)
+            if (String(m[i].id) === String(e)) return m[i];
+          return null;
+        }
+        function visivelNoGrupo(c) {
+          var k = cat.grupoDe && cat.grupoDe[c.id];
+          if (!k) return true;
+          var m = cat.dups[k],
+            comQ = m.filter(function (x) {
+              return qtdTotal(x.id) > 0;
+            });
+          if (comQ.length) return qtdTotal(c.id) > 0;
+          var e = escolhaDup(k);
+          return e ? e === c : m[0] === c;
+        }
+        function nomeShowroom(c) {
+          return (c.showroom || "").trim() || "sem showroom";
+        }
+        function botaoDup(c) {
+          var k = cat.grupoDe && cat.grupoDe[c.id];
+          if (!k) return null;
+          var esc = escolhaDup(k),
+            n = cat.dups[k].length,
+            b = el("button", "dup" + (esc ? " ok" : ""));
+          b.type = "button";
+          b.dataset.dup = c.id;
+          b.textContent = esc
+            ? "Showroom " + nomeShowroom(esc) + " · trocar"
+            : "⚠ " + n + " showrooms · escolher";
+          b.title = esc
+            ? "Este item está em " + n + " showrooms. Clique para comparar ou trocar."
+            : "Este item está em " + n + " showrooms. Clique para comparar e escolher.";
+          return b;
+        }
+        var DUP_CAMPOS = [
+          "showroom",
+          "ref_china",
+          "ref_brasil",
+          "ref_final",
+          "descricao",
+          "descricao_original",
+          "categoria",
+          "subcategoria",
+          "preco",
+          "fob",
+          "moq",
+          "cx_master",
+          "display",
+          "pack",
+          "inner_qtd",
+          "dim_cx",
+          "dim_produto",
+          "cbm",
+          "cuft",
+          "gw",
+          "nw",
+          "info"
+        ];
+        var dupAcao = null;
+        function abrirDup(c, depois) {
+          var k = cat.grupoDe && cat.grupoDe[c.id];
+          if (!k) return;
+          var m = cat.dups[k],
+            esc = escolhaDup(k),
+            dlg = $("dlg-dup"),
+            tab = $("dlg-dup-tab");
+          dupAcao = { linha: c.id, depois: depois || null };
+          var mesmos = {};
+          m.forEach(function (x) {
+            mesmos[nomeShowroom(x)] = (mesmos[nomeShowroom(x)] || 0) + 1;
+          });
+          $("dlg-dup-sub").textContent =
+            "A Ref China " +
+            k +
+            " aparece " +
+            m.length +
+            " vezes na planilha. Compare as opções e escolha de qual showroom você quer comprar.";
+          tab.textContent = "";
+          var th = el("thead"),
+            hr = el("tr");
+          hr.appendChild(el("th", null, ""));
+          m.forEach(function (x, i) {
+            var cel = el("th"),
+              op = el("div", "op"),
+              im = el("img");
+            im.alt = "";
+            if (x.imagem) {
+              im.dataset.cat = x.id;
+              if (cat.urls[x.id]) im.src = cat.urls[x.id];
+              else pedirImagem(x.id);
+            }
+            op.appendChild(im);
+            op.appendChild(
+              el(
+                "span",
+                "sw",
+                "Showroom " +
+                  nomeShowroom(x) +
+                  (mesmos[nomeShowroom(x)] > 1 ? " · opção " + (i + 1) : "")
+              )
+            );
+            if (esc === x) op.appendChild(el("span", "atual", "✓ Escolhido"));
+            var b = el(
+              "button",
+              "btn small" + (esc === x ? "" : " primary"),
+              esc === x ? "Manter este" : "Escolher este"
+            );
+            b.type = "button";
+            b.dataset.escolher = x.id;
+            op.appendChild(b);
+            cel.appendChild(op);
+            hr.appendChild(cel);
+          });
+          th.appendChild(hr);
+          tab.appendChild(th);
+          var tb = el("tbody");
+          DUP_CAMPOS.forEach(function (f) {
+            var vals = m.map(function (x) {
+              return textoCel(x, f);
+            });
+            if (
+              !vals.some(function (v) {
+                return v;
+              })
+            )
+              return;
+            var dif = vals.some(function (v) {
+                return v !== vals[0];
+              }),
+              tr = el("tr", dif ? "dif" : "");
+            tr.appendChild(el("th", null, ROTULOS[f] || f));
+            vals.forEach(function (v) {
+              tr.appendChild(el("td", null, v || "-"));
+            });
+            tb.appendChild(tr);
+          });
+          tab.appendChild(tb);
+          dlg.showModal();
+        }
+        function escolherDup(id) {
+          var c = cat.porId[id],
+            k = c && cat.grupoDe[c.id];
+          if (!k) return;
+          var antigo = escolhaDup(k);
+          // troca de showroom: as quantidades e a prioridade vão junto
+          if (antigo && antigo !== c && qtdTotal(antigo.id) > 0) {
+            Object.keys(cat.qtd).forEach(function (q) {
+              var pp = q.split("@");
+              if (pp[0] !== String(antigo.id)) return;
+              var novo = chaveQ(c.id, pp[1] || null);
+              cat.qtd[novo] = (cat.qtd[novo] || 0) + cat.qtd[q];
+              delete cat.qtd[q];
+            });
+            if (cat.prio && cat.prio[antigo.id]) {
+              delete cat.prio[antigo.id];
+              cat.prio[c.id] = true;
+            }
+          }
+          cat.escolha[k] = c.id;
+          agendarRascunho();
+          var acao = dupAcao;
+          $("dlg-dup").close();
+          var body = $("cat-corpo"),
+            velho =
+              body &&
+              acao &&
+              body.querySelector('tr[data-id="' + acao.linha + '"]');
+          var nova = linhaCat(c);
+          if (velho) velho.replaceWith(nova);
+          else renderCatalogo();
+          body &&
+            body
+              .querySelectorAll("img[data-cat]:not([src])")
+              .forEach(function (im) {
+                if (cat.obs) cat.obs.observe(im);
+                else pedirImagem(im.dataset.cat);
+              });
+          totais();
+          renderChips();
+          if (acao && acao.depois === "focar") {
+            var inp = document.querySelector(
+              '#cat-tab input[data-id="' + c.id + '"]'
+            );
+            if (inp) inp.focus();
+          } else if (acao && acao.depois === "dividir") abrirDividir(c);
+        }
+        $("dlg-dup-tab").addEventListener("click", function (e) {
+          var b = e.target.closest("button[data-escolher]");
+          if (b) escolherDup(b.dataset.escolher);
+        });
+        $("dlg-dup-fechar").addEventListener("click", function () {
+          $("dlg-dup").close();
+        });
+        $("dlg-dup").addEventListener("click", function (e) {
+          if (e.target === this) this.close();
+        });
         function botaoPrio(c, q) {
           if (!bancoAtualizado) return null;
           var on = !!(cat.prio && cat.prio[c.id]),
@@ -6256,6 +6548,7 @@
           }
         }
         function linhaCat(c) {
+          var dupPosto = false;
           var q = qtdTotal(c.id),
             tr = el("tr", q > 0 ? "tem" : "");
           tr.dataset.id = c.id;
@@ -6284,8 +6577,16 @@
               return;
             }
             var t = textoCel(c, k),
-              cls = COLS_LARGAS[k] ? "w" : COLS_NUM[k] ? "n" : "nw";
-            tr.appendChild(el("td", cls + (t ? "" : " vazio"), t || "-"));
+              cls = COLS_LARGAS[k] ? "w" : COLS_NUM[k] ? "n" : "nw",
+              tdc = el("td", cls + (t ? "" : " vazio"), t || "-");
+            if (!dupPosto && (k === "ref_china" || k === "descricao")) {
+              var bdu = botaoDup(c);
+              if (bdu) {
+                tdc.appendChild(bdu);
+                dupPosto = true;
+              }
+            }
+            tr.appendChild(tdc);
           });
           function campo(td) {
             var qq = cat.qtd[chaveQ(c.id)] || 0,
@@ -6347,7 +6648,7 @@
           $("cat-info").textContent = cat.itens.length
             ? fmtInt(cat.lista.length) +
               " de " +
-              fmtInt(cat.itens.length) +
+              fmtInt(cat.itens.filter(visivelNoGrupo).length) +
               " itens"
             : "Nenhum item no catálogo ainda.";
           var th = el("thead"),
@@ -6456,6 +6757,16 @@
           totais();
           agendarRascunho();
         });
+        $("cat-tab").addEventListener("focusin", function (e) {
+          var inp = e.target;
+          if (!inp.dataset || !inp.dataset.id || inp.tagName !== "INPUT") return;
+          var c = cat.porId[inp.dataset.id],
+            k = c && cat.grupoDe && cat.grupoDe[c.id];
+          if (k && !escolhaDup(k)) {
+            inp.blur();
+            abrirDup(c, "focar");
+          }
+        });
         $("cat-tab").addEventListener("change", function (e) {
           if (e.target.dataset && e.target.dataset.id) renderChips();
         });
@@ -6477,9 +6788,20 @@
             agendarRascunho();
             return;
           }
+          var bdp = e.target.closest && e.target.closest("button[data-dup]");
+          if (bdp) {
+            abrirDup(cat.porId[bdp.dataset.dup]);
+            return;
+          }
           var bd = e.target.closest && e.target.closest("button[data-dividir]");
           if (bd) {
-            abrirDividir(cat.porId[bd.dataset.dividir]);
+            var cd = cat.porId[bd.dataset.dividir],
+              kd = cat.grupoDe && cat.grupoDe[cd.id];
+            if (kd && !escolhaDup(kd)) {
+              abrirDup(cd, "dividir");
+              return;
+            }
+            abrirDividir(cd);
             return;
           }
           var im = e.target.closest && e.target.closest("img[data-cat]");

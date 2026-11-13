@@ -9304,7 +9304,7 @@
           visao = h;
           document
             .querySelector(".wrap")
-            .classList.toggle("larga", h === "novo" || h === "pedidos");
+            .classList.toggle("larga", h === "novo" || h === "pedidos" || h === "dashboard");
           ["novo", "pedidos", "dashboard", "usuarios"].forEach(function (v) {
             $("v-" + v).hidden = v !== h;
             $("t-" + v).setAttribute(

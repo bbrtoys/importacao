@@ -4766,22 +4766,6 @@
           );
           m.appendChild(t);
           box.appendChild(m);
-          if (cat.lojas.length) {
-            var ch = el("div", "lojas-chips");
-            cat.lojas.forEach(function (l, i) {
-              var c = el("div", "loja-chip"),
-                bar = el("i");
-              bar.style.background = corLoja(i);
-              c.appendChild(bar);
-              c.appendChild(marcaEl(logoLoja(l), l.nome, 34, corLoja(i)));
-              var tx = el("div");
-              tx.appendChild(el("b", null, l.nome));
-              if (l.endereco) tx.appendChild(el("small", null, l.endereco));
-              c.appendChild(tx);
-              ch.appendChild(c);
-            });
-            box.appendChild(ch);
-          }
         }
         $("rows").addEventListener("input", function (e) {
           var t = e.target;

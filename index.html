@@ -5307,7 +5307,7 @@
             return;
           }
           ultimo = {
-            numero: r.data.numero,
+            numero: numeroCurto(r.data.numero),
             cliente: nomeCliente(cid),
             responsavel: st.responsavel.trim(),
             obs: st.obs.trim(),
@@ -7422,6 +7422,11 @@
           }
           return { data: todos };
         }
+        // Os números antigos têm a data no meio (IMP-261113-0007); a sequência
+        // já é única, então exibimos só IMP-0007.
+        function numeroCurto(n) {
+          return String(n || "").replace(/^IMP-\d{6}-/, "IMP-");
+        }
         async function carregarDados(erroEm) {
           erroEm.hidden = true;
           var r = await buscarPedidos();
@@ -7439,7 +7444,7 @@
             });
             return {
               id: p.id,
-              numero: p.numero,
+              numero: numeroCurto(p.numero),
               status: p.status,
               responsavel: p.responsavel || "",
               obs: p.obs || "",
